@@ -21,6 +21,6 @@ func NewRouteManager(configResolver *config.ConfigResolver) *RouteManager {
 }
 
 func (r *RouteManager) Run() {
-	r.addCodeRoutes("/api/code")
+	r.addCodeRoutes("/code")
 	r.gin.Run(":8081")
 }

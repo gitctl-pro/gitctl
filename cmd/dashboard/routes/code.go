@@ -9,6 +9,13 @@ func (r *RouteManager) addCodeRoutes(path string) {
 	ctl := code.NewController()
 	rg.Use()
 	{
-		rg.GET("/search", ctl.SearchProject)
+		rg.GET("/repos", ctl.ListRepo)
+		rg.GET("/:namespace/:name", ctl.GetRepo)
+		rg.GET("/:namespace/:name/branches", ctl.ListBranch)
+		rg.GET("/:namespace/:name/tags", ctl.ListTag)
+		rg.GET("/:namespace/:name/mergRequest", ctl.ListTag)
+		rg.GET("/:namespace/:name/:branch/commits", ctl.ListCommit)
+		rg.GET("/:namespace/:name/commit/:commit", ctl.GetCommit)
+		rg.GET("/:namespace/:name/tree/:branch/:path", ctl.GetFile)
 	}
 }
