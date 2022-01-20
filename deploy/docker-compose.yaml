@@ -1,0 +1,19 @@
+version: "3.8"
+networks:
+  sae:
+    external: false
+services:
+  db:
+    image: mysql:8
+    platform: linux/amd64
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=sae
+      - MYSQL_USER=sae
+      - MYSQL_PASSWORD=sae
+    networks:
+      - sae
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
