@@ -40,18 +40,17 @@
 * skywalking （可观测）
 * promethus （监控）
 * istio （servicemesh）
-* grpc xds （proxyless）
-* dubbo3 
+* grpc proxyless （微服务）
+* dubbo3 proxyless（微服务）
 * argo rollouts (持续发布集成)
 * tekton pipeline （cicd）
-* cluster-autosclaer
+* cluster-autoscaler
 * cluster-api (多集群编排)
 * cilium (network)
-* cluster-autosclaer
 
 ## 有问题反馈
 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流
 * 邮件(zhshw@gitctl.com)
 
 ## 捐助开发者
-希望你喜欢我的项目，希望您能支持我继续向前。
+希望你喜欢该项目，希望您能支持我们继续向前。
