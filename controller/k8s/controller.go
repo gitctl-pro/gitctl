@@ -5,41 +5,37 @@ import (
 )
 
 type K8s struct {
-	Application ApplicationInterface
-	Deployment  DeploymentInterface
-	Cluster     ClusterInterface
-	Node        NodeInterface
-	Namespace   NamespaceInterface
-	ReplicaSet  ReplicaSetInterface
-	Pod         PodInterface
-	Daemonset   DaemonsetInterface
-	Configmap   ConfigmapInterface
-	Service     ServiceInterface
-	Ingress     IngressInterface
-	Job         JobInterface
-	CronJob     CronJobInterface
-	Secret      SecretInterface
-	HPA         HPAInterface
-	PVC         PVCInterface
-	Event       EventInterface
-	Apply       ApplyInterface
-	Scale       ScaleInterface
+	Deployment DeploymentInterface
+	Node       NodeInterface
+	Namespace  NamespaceInterface
+	ReplicaSet ReplicaSetInterface
+	Pod        PodInterface
+	Daemonset  DaemonsetInterface
+	Configmap  ConfigmapInterface
+	Service    ServiceInterface
+	Ingress    IngressInterface
+	Job        JobInterface
+	CronJob    CronJobInterface
+	Secret     SecretInterface
+	HPA        HPAInterface
+	PVC        PVCInterface
+	Event      EventInterface
+	Apply      ApplyInterface
+	Scale      ScaleInterface
 }
 
 func NewController() *K8s {
 	return &K8s{
-		Deployment:  NewDeployment(),
-		Cluster:     NewCluster(),
-		Application: NewApplication(),
-		Namespace:   NewNamespace(),
-		Node:        NewNode(),
-		ReplicaSet:  NewReplicaSet(),
-		Configmap:   NewConfigmap(),
-		Service:     NewService(),
-		Ingress:     NewIngress(),
-		HPA:         NewHPA(),
-		Job:         NewJob(),
-		CronJob:     NewCronJob(),
+		Deployment: NewDeployment(),
+		Namespace:  NewNamespace(),
+		Node:       NewNode(),
+		ReplicaSet: NewReplicaSet(),
+		Configmap:  NewConfigmap(),
+		Service:    NewService(),
+		Ingress:    NewIngress(),
+		HPA:        NewHPA(),
+		Job:        NewJob(),
+		CronJob:    NewCronJob(),
 	}
 }
 
@@ -67,24 +63,11 @@ type PodInterface interface {
 	LogDetail(ctx *gin.Context)
 }
 
-type ClusterInterface interface {
-	ListCluster(ctx *gin.Context)
-	GetCluster(ctx *gin.Context)
-}
-
 type NamespaceInterface interface {
 	ListNamespace(ctx *gin.Context)
 	UpdateNamespace(ctx *gin.Context)
 	DeleteNamespace(ctx *gin.Context)
 	CreateNamespace(ctx *gin.Context)
-}
-
-type ApplicationInterface interface {
-	ListApplication(ctx *gin.Context)
-	GetApplication(ctx *gin.Context)
-	UpdateApplication(ctx *gin.Context)
-	DeleteApplication(ctx *gin.Context)
-	CreateApplication(ctx *gin.Context)
 }
 
 type ReplicaSetInterface interface {

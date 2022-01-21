@@ -33,16 +33,6 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.DELETE("/:name", k8s.Namespace.DeleteNamespace)
 	}
 
-	// route: /api/v1/application
-	rg = r.gin.Group(path + "/application")
-	rg.Use()
-	{
-		rg.GET("", k8s.Application.ListApplication)
-		rg.POST("/create", k8s.Application.CreateApplication)
-		rg.POST("/:name", k8s.Application.UpdateApplication)
-		rg.DELETE("/:name", k8s.Application.DeleteApplication)
-	}
-
 	// route: /api/v1/deployment
 	rg = r.gin.Group(path + "/deployment")
 	rg.Use()

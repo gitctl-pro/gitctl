@@ -47,19 +47,3 @@ func (ctl *deployment) RolloutResume(ctx *gin.Context) {
 func (ctl *deployment) RolloutRollback(ctx *gin.Context) {
 	panic("implement me")
 }
-
-func (ctl *deployment) ListDeployment(ctx *gin.Context) {
-	panic("implement me")
-}
-
-func (ctl *deployment) GetEvents(ctx *gin.Context) {
-	panic("implement me")
-}
-
-func (ctl *deployment) GetDeployment(ctx *gin.Context) {
-	panic("implement me")
-}
-
-func (ctl *deployment) GetReplicaSets(ctx *gin.Context) {
-	panic("implement me")
-}
