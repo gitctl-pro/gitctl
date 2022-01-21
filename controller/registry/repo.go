@@ -2,20 +2,28 @@ package registry
 
 import "github.com/gin-gonic/gin"
 
-type repoCtl struct{}
+type repo struct{}
 
 func NewRepo() Repo {
-	return &repoCtl{}
+	return &repo{}
 }
 
-func (ctl *repoCtl) GetRepo(ctx *gin.Context) {
+func (ctl *repo) UpdateRepo(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *repo) Tags(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *repo) GetRepo(ctx *gin.Context) {
 
 }
 
-func (ctl *repoCtl) ListRepos(ctx *gin.Context) {
+func (ctl *repo) ListRepos(ctx *gin.Context) {
 
 }
 
-func (ctl *repoCtl) DeleteRepo(ctx *gin.Context) {
+func (ctl *repo) DeleteRepo(ctx *gin.Context) {
 
 }
