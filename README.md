@@ -7,17 +7,16 @@
 * git 代码托管
 * project 项目管控
 * pipeline 流水线编排
+  * 持续集成
 * registry 镜像托管
-* 发布控制
-  * 持续发布与集成
-  * 金丝雀
+* applicaiton 应用编排
+  * 渐进式发布
+  * 多云调度
   * 发布管控
 * kubernetes
   * 多集群托管
-  * 多云调度
   * 优化调度效率
   * 多集群应用编排
-  * 日志收集与分析
   * 事件分析
 * servicemesh
   * grpc proxyless支持
