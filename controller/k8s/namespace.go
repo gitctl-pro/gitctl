@@ -8,22 +8,30 @@ func NewNamespace() NamespaceInterface {
 	return &namespace{}
 }
 
-func (ctl *namespace) UpdateNamespace(ctx *gin.Context) {
+func (ctl *namespace) List(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *namespace) DeleteNamespace(ctx *gin.Context) {
+func (ctl *namespace) Update(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *namespace) CreateNamespace(ctx *gin.Context) {
+func (ctl *namespace) Delete(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *namespace) ListNamespace(ctx *gin.Context) {
+func (ctl *namespace) Create(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *namespace) GetNamespace(ctx *gin.Context) {
+func (ctl *namespace) Events(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *namespace) Quota(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *namespace) LimitRange(ctx *gin.Context) {
 	panic("implement me")
 }

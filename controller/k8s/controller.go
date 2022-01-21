@@ -18,6 +18,7 @@ type K8s struct {
 	CronJob    CronJobInterface
 	Secret     SecretInterface
 	HPA        HPAInterface
+	PV         PVInterface
 	PVC        PVCInterface
 	Event      EventInterface
 	Apply      ApplyInterface
@@ -29,6 +30,7 @@ func NewController() *K8s {
 		Deployment: NewDeployment(),
 		Namespace:  NewNamespace(),
 		Node:       NewNode(),
+		Pod:        NewPod(),
 		ReplicaSet: NewReplicaSet(),
 		Configmap:  NewConfigmap(),
 		Service:    NewService(),
@@ -36,6 +38,11 @@ func NewController() *K8s {
 		HPA:        NewHPA(),
 		Job:        NewJob(),
 		CronJob:    NewCronJob(),
+		Secret:     NewSecret(),
+		PVC:        NewPVC(),
+		PV:         NewPV(),
+		Event:      NewEvent(),
+		Scale:      NewScale(),
 	}
 }
 
@@ -64,10 +71,13 @@ type PodInterface interface {
 }
 
 type NamespaceInterface interface {
-	ListNamespace(ctx *gin.Context)
-	UpdateNamespace(ctx *gin.Context)
-	DeleteNamespace(ctx *gin.Context)
-	CreateNamespace(ctx *gin.Context)
+	List(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Events(ctx *gin.Context)
+	Quota(ctx *gin.Context)
+	LimitRange(ctx *gin.Context)
 }
 
 type ReplicaSetInterface interface {
@@ -143,9 +153,10 @@ type PVCInterface interface {
 }
 
 type PVInterface interface {
-	ListSecret(ctx *gin.Context)
-	GetSecret(ctx *gin.Context)
-	CreateSecret(ctx *gin.Context)
+	ListPV(ctx *gin.Context)
+	GetPV(ctx *gin.Context)
+	CreatePV(ctx *gin.Context)
+	DeletePV(ctx *gin.Context)
 }
 
 type EventInterface interface {

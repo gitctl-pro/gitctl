@@ -23,6 +23,8 @@ func NewRouteManager(configResolver *config.ConfigResolver) *RouteManager {
 func (r *RouteManager) Run() {
 	r.addCodeRoutes("/code")
 	r.addK8sRoutes("/k8s")
+	r.addApplicationRoutes("/application")
+	r.addClusterRoutes("/cluster")
 	r.addPipelineRoutes("/pipeline")
 	r.addRegistryRoutes("/registry")
 	r.addProjectRoutes("/project")

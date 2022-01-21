@@ -13,7 +13,7 @@ func SetupMysqlConn(configResolver *config.ConfigResolver) error {
 	_, err = gorm.NewMysqlConn(mysqlOpt, 100, 1000, time.Second*1)
 	if err != nil {
 		log.WithError(err).Error("", err)
-		os.Exit(1)
+		//	os.Exit(1)
 	}
 	return err
 }

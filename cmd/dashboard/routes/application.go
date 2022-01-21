@@ -7,8 +7,8 @@ import (
 func (r *RouteManager) addApplicationRoutes(path string) {
 	rg := r.gin.Group(path)
 	application := application.NewController()
-	// route: /api/v1/cluster
-	rg = r.gin.Group(path + "/application")
+	// route: /cluster
+	rg = r.gin.Group(path)
 	rg.Use()
 	{
 		rg.GET("", application.List)

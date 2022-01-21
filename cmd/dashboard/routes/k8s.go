@@ -6,34 +6,27 @@ import (
 
 func (r *RouteManager) addK8sRoutes(path string) {
 	k8s := k8s.NewController()
-	// route: /api/v1/cluster
-	rg := r.gin.Group(path + "/cluster")
-	rg.Use()
-	{
-		rg.GET("", k8s.Cluster.ListCluster)
-		rg.GET("/:name", k8s.Cluster.GetCluster)
-	}
 
-	// route: /api/v1/node
-	rg = r.gin.Group(path + "/node")
+	// route: /k8s/node
+	rg := r.gin.Group(path + "/node")
 	rg.Use()
 	{
 		rg.GET("", k8s.Node.ListNode)
 		rg.GET("/:name", k8s.Node.GetNode)
 	}
 
-	// route: /api/v1/namespace
+	// route: /k8s/namespace
 	rg = r.gin.Group(path + "/namespace")
 	rg.Use()
 	{
-		rg.GET("", k8s.Namespace.ListNamespace)
-		rg.POST("/create", k8s.Namespace.CreateNamespace)
-		rg.POST("/:name", k8s.Namespace.UpdateNamespace)
-		rg.GET("/:name", k8s.Namespace.ListNamespace)
-		rg.DELETE("/:name", k8s.Namespace.DeleteNamespace)
+		rg.GET("", k8s.Namespace.List)
+		rg.POST("/:name/create", k8s.Namespace.Create)
+		rg.POST("/:name/update", k8s.Namespace.Update)
+		rg.GET("/:name", k8s.Namespace.List)
+		rg.DELETE("/:name", k8s.Namespace.Delete)
 	}
 
-	// route: /api/v1/deployment
+	// route: /k8s/deployment
 	rg = r.gin.Group(path + "/deployment")
 	rg.Use()
 	{
@@ -52,7 +45,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name/rollback", k8s.Deployment.RolloutRollback)
 	}
 
-	// route: /api/v1/replicaset
+	// route: /k8s/replicaset
 	rg = r.gin.Group(path + "/replicaset")
 	rg.Use()
 	{
@@ -64,11 +57,11 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.DELETE("/:namespace/:name", k8s.ReplicaSet.Delete)
 	}
 
-	// route: /api/v1/pod
+	// route: /k8s/pod
 	rg = r.gin.Group(path + "/pod")
 	rg.Use()
 	{
-		rg.GET("/list", k8s.Pod.List)
+		rg.GET("", k8s.Pod.List)
 		rg.GET("/namespace/:name", k8s.Pod.Get)
 		rg.GET("/:namespace/:name/event", k8s.Pod.Events)
 		rg.GET("/:namespace/:name/container", k8s.Pod.Containers)
@@ -77,7 +70,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name/webshell", k8s.Pod.ExecShell)
 	}
 
-	// route: /api/v1/log {
+	// route: /k8s/log {
 	rg = r.gin.Group(path + "/log")
 	rg.Use()
 	{
@@ -85,7 +78,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		//rg.GET("/log/:namespace/:name/file",)
 	}
 
-	// route: /api/v1/ingress
+	// route: /k8s/ingress
 	rg = r.gin.Group(path + "/ingress")
 	rg.Use()
 	{
@@ -94,7 +87,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name/events", k8s.Ingress.Events)
 	}
 
-	// route: /api/v1/job
+	// route: /k8s/job
 	rg = r.gin.Group(path + "/job")
 	rg.Use()
 	{
@@ -103,7 +96,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name/events", k8s.Job.Events)
 	}
 
-	// route: /api/v1/cronjob
+	// route: /k8s/cronjob
 	rg = r.gin.Group(path + "/cronjob")
 	rg.Use()
 	{
@@ -112,7 +105,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name/events", k8s.CronJob.Events)
 
 	}
-	// route: /api/v1/secret
+	// route: /k8s/secret
 	rg = r.gin.Group(path + "/secret")
 	rg.Use()
 	{
@@ -120,7 +113,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name", k8s.Secret.GetSecret)
 	}
 
-	// route: /api/v1/pvc
+	// route: /k8s/pvc
 	rg = r.gin.Group(path + "/pvc")
 	rg.Use()
 	{
@@ -128,25 +121,33 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name", k8s.PVC.GetPVC)
 	}
 
-	// route: /api/v1/event
+	// route: /k8s/pv
+	rg = r.gin.Group(path + "/pv")
+	rg.Use()
+	{
+		rg.GET("", k8s.PV.ListPV)
+		rg.GET("/:name", k8s.PV.GetPV)
+		rg.DELETE("/:name", k8s.PV.DeletePV)
+	}
+
+	// route: /k8s/event
 	rg = r.gin.Group(path + "/event")
 	rg.Use()
 	{
 		rg.GET("", k8s.Event.ListEvents)
 	}
 
-	// route: /api/v1/hpa
+	// route: /k8s/hpa
 	rg = r.gin.Group(path + "/hpa")
 	rg.Use()
 	{
 		rg.GET("", k8s.HPA.ListHPA)
 		rg.GET("/:namespace/:name", k8s.HPA.GetHPA)
-		rg.POST("/:namespace/:name", k8s.HPA.UpdateHPA)
-		rg.POST("/:namespace/:name", k8s.HPA.CreateHPA)
+		rg.POST("/:namespace/:name/update", k8s.HPA.UpdateHPA)
 		rg.DELETE("/:namespace/:name", k8s.HPA.DeleteHPA)
 	}
 
-	// route: /api/v1/service
+	// route: /k8s/service
 	rg = r.gin.Group(path + "/service")
 	rg.Use()
 	{
@@ -157,18 +158,18 @@ func (r *RouteManager) addK8sRoutes(path string) {
 
 	}
 
-	// route: /api/v1/configmap
+	// route: /k8s/configmap
 	rg = r.gin.Group(path + "/configmap")
 	rg.Use()
 	{
 		rg.GET("/list", k8s.Configmap.List)
 		rg.GET("/:namespace/:name", k8s.Configmap.Get)
-		rg.GET("/:namespace/:name", k8s.Configmap.Create)
-		rg.GET("/:namespace/:name", k8s.Configmap.Update)
+		rg.POST("/:namespace/:name/create", k8s.Configmap.Create)
+		rg.POST("/:namespace/:name/update", k8s.Configmap.Update)
 		rg.GET("/:namespace/:name/event", k8s.Configmap.Events)
 	}
 
-	// route: /api/v1/scale
+	// route: /k8s/scale
 	rg = r.gin.Group(path + "/scale")
 	rg.Use()
 	{
