@@ -2,28 +2,28 @@ package k8s
 
 import "github.com/gin-gonic/gin"
 
-type configmap struct{}
+type configMap struct{}
 
-func NewConfigmap() ConfigmapInterface {
-	return &configmap{}
+func NewConfigMap() ConfigMapInterface {
+	return &configMap{}
 }
 
-func (ctl *configmap) List(ctx *gin.Context) {
+func (c configMap) ListConfigMap(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *configmap) Get(ctx *gin.Context) {
+func (c configMap) Get(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *configmap) Create(ctx *gin.Context) {
+func (c configMap) Create(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *configmap) Update(ctx *gin.Context) {
+func (c configMap) Update(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *configmap) Events(ctx *gin.Context) {
+func (c configMap) Delete(ctx *gin.Context) {
 	panic("implement me")
 }

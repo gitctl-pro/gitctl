@@ -8,14 +8,18 @@ func NewPVC() PVCInterface {
 	return &pvc{}
 }
 
+func (ctl *pvc) Delete(ctx *gin.Context) {
+	panic("implement me")
+}
+
 func (ctl *pvc) ListPVC(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *pvc) GetPVC(ctx *gin.Context) {
+func (ctl *pvc) Get(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *pvc) CreatePVC(ctx *gin.Context) {
+func (ctl *pvc) Create(ctx *gin.Context) {
 	panic("implement me")
 }

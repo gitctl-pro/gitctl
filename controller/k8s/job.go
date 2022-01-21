@@ -8,11 +8,19 @@ func NewJob() JobInterface {
 	return &job{}
 }
 
+func (ctl *job) Update(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *job) Delete(ctx *gin.Context) {
+	panic("implement me")
+}
+
 func (ctl *job) ListJob(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *job) GetJob(ctx *gin.Context) {
+func (ctl *job) Get(ctx *gin.Context) {
 	panic("implement me")
 }
 

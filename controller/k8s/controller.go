@@ -5,51 +5,56 @@ import (
 )
 
 type K8s struct {
-	Deployment DeploymentInterface
-	Node       NodeInterface
-	Namespace  NamespaceInterface
-	ReplicaSet ReplicaSetInterface
-	Pod        PodInterface
-	Daemonset  DaemonsetInterface
-	Configmap  ConfigmapInterface
-	Service    ServiceInterface
-	Ingress    IngressInterface
-	Job        JobInterface
-	CronJob    CronJobInterface
-	Secret     SecretInterface
-	HPA        HPAInterface
-	PV         PVInterface
-	PVC        PVCInterface
-	Event      EventInterface
-	Apply      ApplyInterface
-	Scale      ScaleInterface
+	Deployment     DeploymentInterface
+	Node           NodeInterface
+	Namespace      NamespaceInterface
+	ReplicaSet     ReplicaSetInterface
+	Pod            PodInterface
+	DaemonSet      DaemonsetInterface
+	ConfigMap      ConfigMapInterface
+	Service        ServiceInterface
+	Ingress        IngressInterface
+	Job            JobInterface
+	CronJob        CronJobInterface
+	Secret         SecretInterface
+	HPA            HPAInterface
+	PV             PVInterface
+	PVC            PVCInterface
+	Event          EventInterface
+	Apply          ApplyInterface
+	Scale          ScaleInterface
+	ServiceAccount ServiceAccountInterface
+	ClusterRole    ClusterRoleInterface
 }
 
 func NewController() *K8s {
 	return &K8s{
-		Deployment: NewDeployment(),
-		Namespace:  NewNamespace(),
-		Node:       NewNode(),
-		Pod:        NewPod(),
-		ReplicaSet: NewReplicaSet(),
-		Configmap:  NewConfigmap(),
-		Service:    NewService(),
-		Ingress:    NewIngress(),
-		HPA:        NewHPA(),
-		Job:        NewJob(),
-		CronJob:    NewCronJob(),
-		Secret:     NewSecret(),
-		PVC:        NewPVC(),
-		PV:         NewPV(),
-		Event:      NewEvent(),
-		Scale:      NewScale(),
+		Deployment:     NewDeployment(),
+		Namespace:      NewNamespace(),
+		Node:           NewNode(),
+		Pod:            NewPod(),
+		ReplicaSet:     NewReplicaSet(),
+		ConfigMap:      NewConfigMap(),
+		Service:        NewService(),
+		Ingress:        NewIngress(),
+		HPA:            NewHPA(),
+		Job:            NewJob(),
+		CronJob:        NewCronJob(),
+		Secret:         NewSecret(),
+		PVC:            NewPVC(),
+		PV:             NewPV(),
+		Event:          NewEvent(),
+		Scale:          NewScale(),
+		ServiceAccount: NewServiceAccount(),
+		ClusterRole:    NewClusterRole(),
 	}
 }
 
 type DeploymentInterface interface {
-	Events(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Update(ctx *gin.Context)
 	List(ctx *gin.Context)
+	Events(ctx *gin.Context)
 	ReplicaSets(ctx *gin.Context)
 	NewReplicaSets(ctx *gin.Context)
 	OldReplicaSets(ctx *gin.Context)
@@ -94,12 +99,12 @@ type NodeInterface interface {
 	GetNode(ctx *gin.Context)
 }
 
-type ConfigmapInterface interface {
-	List(ctx *gin.Context)
+type ConfigMapInterface interface {
+	ListConfigMap(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Create(ctx *gin.Context)
 	Update(ctx *gin.Context)
-	Events(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type DaemonsetInterface interface {
@@ -115,27 +120,34 @@ type ServiceInterface interface {
 }
 
 type IngressInterface interface {
-	ListIngress(ctx *gin.Context)
-	GetIngress(ctx *gin.Context)
+	ListEvent(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
 
 type JobInterface interface {
 	ListJob(ctx *gin.Context)
-	GetJob(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
 
 type CronJobInterface interface {
 	ListCronJob(ctx *gin.Context)
-	GetCronJob(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
 
 type SecretInterface interface {
 	ListSecret(ctx *gin.Context)
-	GetSecret(ctx *gin.Context)
-	CreateSecret(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
 }
 
 type HPAInterface interface {
@@ -148,8 +160,9 @@ type HPAInterface interface {
 
 type PVCInterface interface {
 	ListPVC(ctx *gin.Context)
-	GetPVC(ctx *gin.Context)
-	CreatePVC(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type PVInterface interface {
@@ -169,4 +182,16 @@ type ApplyInterface interface {
 
 type ScaleInterface interface {
 	ScaleResource(ctx *gin.Context)
+}
+
+type ServiceAccountInterface interface {
+	ListServiceAccount(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+}
+
+type ClusterRoleInterface interface {
+	ListClusterRole(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }

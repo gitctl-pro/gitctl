@@ -8,14 +8,22 @@ func NewIngress() IngressInterface {
 	return &ingress{}
 }
 
-func (ctl *ingress) ListIngress(ctx *gin.Context) {
+func (ctl *ingress) Get(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *ingress) GetIngress(ctx *gin.Context) {
+func (ctl *ingress) Update(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *ingress) Delete(ctx *gin.Context) {
 	panic("implement me")
 }
 
 func (ctl *ingress) Events(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *ingress) ListEvent(ctx *gin.Context) {
 	panic("implement me")
 }
