@@ -34,7 +34,7 @@
   * aws
 
 ## 附属项目
-* gitctl-pro/gitcl 项目接口集合
+* gitctl-pro/gitctl 项目接口集合
 * gitctl-pro/apps 应用编排与持续发布
 * gitctl-pro/clusters 多集群编排与集群伸缩
 
