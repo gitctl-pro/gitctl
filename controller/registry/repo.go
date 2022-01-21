@@ -1,4 +1,4 @@
-package code
+package registry
 
 import "github.com/gin-gonic/gin"
 
@@ -17,13 +17,5 @@ func (ctl *repoCtl) ListRepos(ctx *gin.Context) {
 }
 
 func (ctl *repoCtl) DeleteRepo(ctx *gin.Context) {
-
-}
-
-func (ctl *repoCtl) UpdateRepo(ctx *gin.Context) {
-
-}
-
-func (ctl *repoCtl) CreateRepo(ctx *gin.Context) {
 
 }

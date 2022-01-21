@@ -6,16 +6,16 @@ import (
 
 func (r *RouteManager) addCodeRoutes(path string) {
 	rg := r.gin.Group(path)
-	ctl := code.NewController()
+	code := code.NewController()
 	rg.Use()
 	{
-		rg.GET("/repos", ctl.ListRepo)
-		rg.GET("/:namespace/:name", ctl.GetRepo)
-		rg.GET("/:namespace/:name/branches", ctl.ListBranch)
-		rg.GET("/:namespace/:name/tags", ctl.ListTag)
-		rg.GET("/:namespace/:name/mergRequest", ctl.ListTag)
-		rg.GET("/:namespace/:name/:branch/commits", ctl.ListCommit)
-		rg.GET("/:namespace/:name/commit/:commit", ctl.GetCommit)
-		rg.GET("/:namespace/:name/tree/:branch/:path", ctl.GetFile)
+		rg.GET("/repos", code.Repo.ListRepos)
+		rg.GET("/:namespace/:name", code.Repo.GetRepo)
+		rg.GET("/:namespace/:name/branches", code.Branch.ListBranches)
+		rg.GET("/:namespace/:name/tags", code.Tag.ListTags)
+		//rg.GET("/:namespace/:name/mergRequest", )
+		rg.GET("/:namespace/:name/:branch/commits", code.Commit.ListCommits)
+		rg.GET("/:namespace/:name/commit/:commit", code.Commit.GetCommit)
+		rg.GET("/:namespace/:name/tree/:branch/:path", code.Tree.GetFile)
 	}
 }

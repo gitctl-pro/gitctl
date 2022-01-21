@@ -1,7 +1,19 @@
 package registry
 
-type CodeController struct{}
+import "github.com/gin-gonic/gin"
 
-func NewController() *CodeController {
-	return &CodeController{}
+type RegistryController struct {
+	Repo Repo
+}
+
+func NewController() *RegistryController {
+	return &RegistryController{
+		Repo: NewRepo(),
+	}
+}
+
+type Repo interface {
+	GetRepo(ctx *gin.Context)
+	ListRepos(ctx *gin.Context)
+	DeleteRepo(ctx *gin.Context)
 }
