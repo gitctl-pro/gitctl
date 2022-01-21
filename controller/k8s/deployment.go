@@ -2,24 +2,64 @@ package k8s
 
 import "github.com/gin-gonic/gin"
 
-type deploymentCtl struct{}
+type deployment struct{}
 
-func NewDeployment() Deployment {
-	return &deploymentCtl{}
+func NewDeployment() DeploymentInterface {
+	return &deployment{}
 }
 
-func (ctl *deploymentCtl) ListDeployment(ctx *gin.Context) {
+func (ctl *deployment) Events(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *deploymentCtl) GetEvents(ctx *gin.Context) {
+func (ctl *deployment) Get(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *deploymentCtl) GetDeployment(ctx *gin.Context) {
+func (ctl *deployment) List(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *deploymentCtl) GetReplicaSets(ctx *gin.Context) {
+func (ctl *deployment) ReplicaSets(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) NewReplicaSets(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) OldReplicaSets(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) RolloutRestart(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) RolloutPause(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) RolloutResume(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) RolloutRollback(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) ListDeployment(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) GetEvents(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) GetDeployment(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) GetReplicaSets(ctx *gin.Context) {
 	panic("implement me")
 }
