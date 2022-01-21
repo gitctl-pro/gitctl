@@ -39,14 +39,12 @@
 * gitctl-pro/clusters 多集群编排与集群伸缩
 
 ## 第三方引用或适配
-* gitea （git）
 * otel （trace）
 * skywalking （可观测）
 * promethus （监控）
 * istio （servicemesh）
 * grpc proxyless （微服务）
 * dubbo3 proxyless（微服务）
-* argo rollouts (持续发布集成)
 * tekton pipeline （cicd）
 * cluster-autoscaler
 * cluster-api (多集群编排)
