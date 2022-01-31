@@ -9,7 +9,7 @@
 * pipeline 流水线编排
   * 持续集成
 * registry 镜像托管
-* applicaiton 应用编排
+* application 应用编排
   * 渐进式发布
   * 多云调度
   * 发布管控
