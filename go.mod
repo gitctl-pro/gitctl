@@ -12,6 +12,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.2.3
 	gorm.io/gorm v1.22.5
+	k8s.io/apimachinery v0.23.2
 	k8s.io/client-go v0.23.2
 	k8s.io/component-base v0.23.2
 	k8s.io/klog/v2 v2.40.1
@@ -50,7 +51,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apimachinery v0.23.2 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
