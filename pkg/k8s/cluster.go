@@ -5,7 +5,6 @@ import (
 	"github.com/gitctl-pro/gitctl/pkg/k8s/util"
 	"github.com/gitctl-pro/gitctl/pkg/logging"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sync"
 )
@@ -15,9 +14,7 @@ var (
 )
 
 type kubeClient struct {
-	config              *rest.Config
-	client              *kubernetes.Clientset
-	apiextensionsClient *resourceVerber
+	config *rest.Config
 }
 
 type clusterManager struct {
@@ -39,7 +36,7 @@ func NewClusterManager(config *rest.Config) ClusterManager {
 	}
 }
 
-func (m *clusterManager) Get(name string) *kubeClient {
+func (m *clusterManager) Get(name string) (*kubeClient, error) {
 	client, ok := m.clusters[name]
 	if !ok {
 		m.lock.Lock()
@@ -47,22 +44,15 @@ func (m *clusterManager) Get(name string) *kubeClient {
 		cluster := &corev1.Cluster{}
 		err := m.resource.Get(name, cluster)
 		if err != nil {
+			return nil, err
 		}
 		config, err := util.LoadConfig(cluster.Spec.KubeConfig)
-		client, _ := kubernetes.NewForConfig(config)
-		extResource := NewResourceVerber(config, &schema.GroupVersionKind{
-			Kind:    "CustomResourceDefinition",
-			Group:   "apiextensions.k8s.io",
-			Version: "v1",
-		})
 		m.clusters[name] = &kubeClient{
-			client:              client,
-			apiextensionsClient: extResource,
-			config:              config,
+			config: config,
 		}
-		return m.clusters[name]
+		return m.clusters[name], nil
 	}
-	return client
+	return client, nil
 }
 
 func (m *clusterManager) Create(cluster *corev1.Cluster) error {

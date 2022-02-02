@@ -10,7 +10,7 @@ import (
 )
 
 type ClusterManager interface {
-	Get(name string) *kubeClient
+	Get(name string) (*kubeClient, error)
 	Create(cluster *v1.Cluster) error
 	Delete(name string) error
 }

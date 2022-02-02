@@ -14,7 +14,7 @@ func TestReourceVerber(t *testing.T) {
 	kubeConfig := "/Users/zsw/.kube/config"
 	restConfig, _ := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	clusterManager := NewClusterManager(restConfig)
-	client := clusterManager.Get("dev")
+	client, _ := clusterManager.Get("dev")
 	resource := NewResourceVerber(client.config, &schema.GroupVersionKind{
 		Kind:    "cluster",
 		Group:   "core.gitctl.com",
