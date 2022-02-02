@@ -2,157 +2,161 @@ package k8s
 
 import (
 	"context"
+	"github.com/gobuffalo/flect"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
+	"strings"
 	"time"
 )
+
+var Scheme = runtime.NewScheme()
+var Codecs = serializer.NewCodecFactory(Scheme)
 
 type resourceVerber struct {
 	schema.GroupVersionKind
 	client         rest.Interface
 	clusterManager ClusterManager
 	namespace      string
-	resource       string
+	Resource       string
 }
 
-func NewResourceVerber(client rest.Interface, kind schema.GroupVersionKind) *resourceVerber {
-	client, resource, _ := KindResource(kind)
+func NewResourceVerber(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
+	client, resource, _ := KindForResource(config, gvk)
 	return &resourceVerber{
 		client:   client,
-		resource: resource,
+		Resource: resource,
 	}
 }
 
-func KindResource(kind schema.GroupVersionKind) (rest.Interface, string, error) {
-
-	return nil, "", nil
+func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.Interface, string, error) {
+	config.GroupVersion = &schema.GroupVersion{
+		Group:   gvk.Group,
+		Version: gvk.Version,
+	}
+	config.APIPath = "/apis"
+	config.NegotiatedSerializer = Codecs.WithoutConversion()
+	client, err := rest.RESTClientFor(config)
+	plural := flect.Pluralize(strings.ToLower(gvk.Kind))
+	return client, plural, err
 }
 
-func (verber *resourceVerber) Cluster(cluster string) {
-	verber.client, _ = verber.clusterManager.Get(cluster)
+func (resource *resourceVerber) Namespace(namespace string) *resourceVerber {
+	resource.namespace = namespace
+	return resource
 }
 
-func (verber *resourceVerber) Namespace(namespace string) *resourceVerber {
-	verber.namespace = namespace
-	return verber
-}
-
-func (verber *resourceVerber) Delete(name string) error {
+func (resource *resourceVerber) Delete(name string) error {
 	defaultPropagationPolicy := metav1.DeletePropagationForeground
 	defaultDeleteOptions := &metav1.DeleteOptions{
 		PropagationPolicy: &defaultPropagationPolicy,
 	}
-	req := verber.client.Get().
+	req := resource.client.Get().
 		Namespace(name).
-		Resource(verber.resource).
+		Resource(resource.Resource).
 		Name(name).
 		Body(defaultDeleteOptions)
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
 
 	return req.Do(context.TODO()).Error()
 }
 
-func (verber *resourceVerber) Put(name string, object *runtime.Unknown) error {
+func (resource *resourceVerber) Put(name string, object runtime.Object) (err error) {
 
-	req := verber.client.Put().
-		Resource(verber.resource).
+	req := resource.client.Put().
+		Resource(resource.Resource).
 		Name(name).
 		SetHeader("Content-Type", "application/json").
-		Body([]byte(object.Raw))
+		Body(object)
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
-
-	return req.Do(context.TODO()).Error()
+	err = req.Do(context.TODO()).Error()
+	return
 }
 
-func (verber *resourceVerber) Get(name string) (runtime.Object, error) {
-	result := &runtime.Unknown{}
-	req := verber.client.Get().
-		Resource(verber.resource).
+func (resource *resourceVerber) Get(name string, object runtime.Object) (err error) {
+	req := resource.client.Get().
+		Resource(resource.Resource).
 		Name(name).
 		SetHeader("Accept", "application/json")
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
-
-	err := req.Do(context.TODO()).Into(result)
-	return result, err
+	err = req.Do(context.TODO()).Into(object)
+	return err
 }
 
-func (verber *resourceVerber) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (runtime.Object, error) {
-	result := &runtime.Unknown{}
-	req := verber.client.Patch(pt).
-		Resource(verber.resource).
+func (resource *resourceVerber) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (err error) {
+	req := resource.client.Patch(pt).
+		Resource(resource.Resource).
 		Name(name).
 		SubResource(subresources...).
 		SetHeader("Accept", "application/json").
 		Body(data)
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
 
-	err := req.Do(context.TODO()).Into(result)
-	return result, err
+	err = req.Do(context.TODO()).Error()
+	return err
 }
 
-func (verber *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+func (resource *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 	opts.Watch = true
-	req := verber.client.Get().
-		Resource(verber.resource).
+	req := resource.client.Get().
+		Resource(resource.Resource).
 		Timeout(timeout).
 		SetHeader("Accept", "application/json")
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
 	return req.Watch(ctx)
 
 }
 
-func (verber *resourceVerber) Create(object *runtime.Unknown) (result runtime.Object, err error) {
-	req := verber.client.Post().
-		Resource(verber.resource).
+func (resource *resourceVerber) Create(object runtime.Object) (err error) {
+	req := resource.client.Post().
+		Resource(resource.Resource).
 		SetHeader("Accept", "application/json").
-		Body([]byte(object.Raw))
+		Body(object)
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
-	err = req.Do(context.TODO()).Into(result)
-	return result, err
+	err = req.Do(context.TODO()).Into(object)
+	return err
 }
 
-func (verber *resourceVerber) List(opts metav1.ListOptions) (result runtime.Object, err error) {
+func (resource *resourceVerber) List(object runtime.Object, opts metav1.ListOptions) (err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 
-	req := verber.client.Get().
-		Resource(verber.resource).
+	req := resource.client.Get().
+		Resource(resource.Resource).
 		SetHeader("Accept", "application/json").
 		Timeout(timeout)
 
-	if len(verber.namespace) > 0 {
-		req.Namespace(verber.namespace)
+	if len(resource.namespace) > 0 {
+		req.Namespace(resource.namespace)
 	}
-
-	err = req.Do(context.TODO()).Into(result)
-
-	return
+	err = req.Do(context.TODO()).Into(object)
+	return err
 }
