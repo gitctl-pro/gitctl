@@ -22,14 +22,14 @@ type resourceVerber struct {
 	client         rest.Interface
 	clusterManager ClusterManager
 	namespace      string
-	Resource       string
+	resource       string
 }
 
 func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
 	client, resource, _ := kindForResource(config, gvk)
 	return &resourceVerber{
 		client:   client,
-		Resource: resource,
+		resource: resource,
 	}
 }
 
@@ -61,12 +61,12 @@ func (resource *resourceVerber) Delete(name string) error {
 	}
 	req := resource.client.Get().
 		Namespace(name).
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		Name(name).
 		Body(defaultDeleteOptions)
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 
 	return req.Do(context.TODO()).Error()
@@ -74,13 +74,13 @@ func (resource *resourceVerber) Delete(name string) error {
 
 func (resource *resourceVerber) Put(name string, object runtime.Object) (err error) {
 	req := resource.client.Put().
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		Name(name).
 		SetHeader("Content-Type", "application/json").
 		Body(object)
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 	err = req.Do(context.TODO()).Error()
 	return
@@ -88,12 +88,12 @@ func (resource *resourceVerber) Put(name string, object runtime.Object) (err err
 
 func (resource *resourceVerber) Get(name string, object runtime.Object) (err error) {
 	req := resource.client.Get().
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		Name(name).
 		SetHeader("Accept", "application/json")
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 	err = req.Do(context.TODO()).Into(object)
 	return err
@@ -101,14 +101,14 @@ func (resource *resourceVerber) Get(name string, object runtime.Object) (err err
 
 func (resource *resourceVerber) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (err error) {
 	req := resource.client.Patch(pt).
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		Name(name).
 		SubResource(subresources...).
 		SetHeader("Accept", "application/json").
 		Body(data)
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 
 	err = req.Do(context.TODO()).Error()
@@ -122,12 +122,12 @@ func (resource *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptio
 	}
 	opts.Watch = true
 	req := resource.client.Get().
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		Timeout(timeout).
 		SetHeader("Accept", "application/json")
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 	return req.Watch(ctx)
 
@@ -135,12 +135,12 @@ func (resource *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptio
 
 func (resource *resourceVerber) Create(object runtime.Object) (err error) {
 	req := resource.client.Post().
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		SetHeader("Accept", "application/json").
 		Body(object)
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 	err = req.Do(context.TODO()).Into(object)
 	return err
@@ -153,12 +153,12 @@ func (resource *resourceVerber) List(object runtime.Object, opts metav1.ListOpti
 	}
 
 	req := resource.client.Get().
-		Resource(resource.Resource).
+		Resource(resource.resource).
 		SetHeader("Accept", "application/json").
 		Timeout(timeout)
 
 	if len(resource.namespace) > 0 {
-		req.Namespace(resource.namespace)
+		req = req.Namespace(resource.namespace)
 	}
 	err = req.Do(context.TODO()).Into(object)
 	return err

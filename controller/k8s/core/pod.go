@@ -1,28 +1,45 @@
-package k8s
+package core
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type cronjob struct {
+type pod struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewCronjob(clusterManager k8s.ClusterManager) CronjobInterface {
+func NewPod(clusterManager k8s.ClusterManager) *pod {
 	gvk := &schema.GroupVersionKind{
-		Group:   "apps",
-		Kind:    "cronjob",
+		Kind:    "pod",
 		Version: "v1",
 	}
-	return &cronjob{clusterManager: clusterManager, gvk: gvk}
+	return &pod{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *cronjob) Get(ctx *gin.Context) {
+func (ctl *pod) ListPod(ctx *gin.Context) {
+	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
+
+	cfg, _ := ctl.clusterManager.Get(cluster)
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
+		List(obj, metav1.ListOptions{})
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
+}
+
+func (ctl *pod) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -33,14 +50,14 @@ func (ctl *cronjob) Get(ctx *gin.Context) {
 		Namespace(namespace).
 		Get(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *cronjob) Put(ctx *gin.Context) {
+func (ctl *pod) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -51,14 +68,14 @@ func (ctl *cronjob) Put(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *cronjob) Delete(ctx *gin.Context) {
+func (ctl *pod) Delete(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -68,13 +85,13 @@ func (ctl *cronjob) Delete(ctx *gin.Context) {
 		Namespace(namespace).
 		Delete(name)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err: err,
 	})
 	return
 }
 
-func (ctl *cronjob) Create(ctx *gin.Context) {
+func (ctl *pod) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	obj := &runtime.Unknown{}
@@ -85,30 +102,36 @@ func (ctl *cronjob) Create(ctx *gin.Context) {
 		Namespace(namespace).
 		Create(obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *cronjob) ListCronjob(ctx *gin.Context) {
-	cluster := ctx.Param("cluster")
-	namespace := ctx.Param("namespace")
+func (ctl *pod) GetLogs(ctx *gin.Context) {
 
-	cfg, _ := ctl.clusterManager.Get(cluster)
-	obj := &runtime.Unknown{}
-	err := k8s.NewResource(cfg, ctl.gvk).
-		Namespace(namespace).
-		List(obj, metav1.ListOptions{})
-
-	ctx.JSON(200, &response{
-		Err:  err,
-		Data: obj,
-	})
-	return
 }
 
-func (ctl *cronjob) Events(ctx *gin.Context) {
+func (ctl *pod) Eviction(ctx *gin.Context) {
+
+}
+
+func (ctl *pod) Containers(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *pod) Events(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *pod) PersistentVolumeClaims(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *pod) ExecShell(ctx *gin.Context) {
+	panic("implement me")
+}
+func (ctl *pod) ExecShellInfo(ctx *gin.Context) {
 	panic("implement me")
 }

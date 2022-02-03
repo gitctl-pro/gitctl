@@ -1,45 +1,45 @@
-package k8s
+package core
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type crd struct {
+type resourceQuota struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewCrd(clusterManager k8s.ClusterManager) CrdInterface {
+func NewResourceQuota(clusterManager k8s.ClusterManager) *resourceQuota {
 	gvk := &schema.GroupVersionKind{
-		Group:   "apiextensions.k8s.io",
-		Kind:    "CustomResourceDefinition",
+		Kind:    "resourceQuota",
 		Version: "v1",
 	}
-	return &crd{clusterManager: clusterManager, gvk: gvk}
+	return &resourceQuota{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *crd) ListCrd(ctx *gin.Context) {
+func (ctl *resourceQuota) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
+	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
-		List(obj, metav1.ListOptions{})
+		Get(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *crd) Get(ctx *gin.Context) {
+func (ctl *resourceQuota) List(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -50,14 +50,14 @@ func (ctl *crd) Get(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *crd) Put(ctx *gin.Context) {
+func (ctl *resourceQuota) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -68,14 +68,14 @@ func (ctl *crd) Put(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *crd) Delete(ctx *gin.Context) {
+func (ctl *resourceQuota) Delete(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -85,15 +85,16 @@ func (ctl *crd) Delete(ctx *gin.Context) {
 		Namespace(namespace).
 		Delete(name)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err: err,
 	})
 	return
 }
 
-func (ctl *crd) Create(ctx *gin.Context) {
+func (ctl *resourceQuota) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
+
 	obj := &runtime.Unknown{}
 	ctx.BindJSON(obj)
 
@@ -102,7 +103,7 @@ func (ctl *crd) Create(ctx *gin.Context) {
 		Namespace(namespace).
 		Create(obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})

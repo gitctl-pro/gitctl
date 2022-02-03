@@ -1,7 +1,8 @@
-package k8s
+package networking
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,7 +14,7 @@ type ingress struct {
 	gvk            *schema.GroupVersionKind
 }
 
-func NewIngress(clusterManager k8s.ClusterManager) IngressInterface {
+func NewIngress(clusterManager k8s.ClusterManager) *ingress {
 	gvk := &schema.GroupVersionKind{
 		Group:   "network",
 		Kind:    "ingress",
@@ -32,7 +33,7 @@ func (ctl *ingress) ListIngress(ctx *gin.Context) {
 		Namespace(namespace).
 		List(obj, metav1.ListOptions{})
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
@@ -50,7 +51,7 @@ func (ctl *ingress) Create(ctx *gin.Context) {
 		Namespace(namespace).
 		Create(obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
@@ -68,7 +69,7 @@ func (ctl *ingress) Get(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
@@ -86,7 +87,7 @@ func (ctl *ingress) Put(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
@@ -103,7 +104,7 @@ func (ctl *ingress) Delete(ctx *gin.Context) {
 		Namespace(namespace).
 		Delete(name)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err: err,
 	})
 	return

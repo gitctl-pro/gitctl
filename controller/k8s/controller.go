@@ -2,12 +2,18 @@ package k8s
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/controller/k8s/apps"
+	"github.com/gitctl-pro/gitctl/controller/k8s/autoscaling"
+	"github.com/gitctl-pro/gitctl/controller/k8s/batch"
+	"github.com/gitctl-pro/gitctl/controller/k8s/core"
+	"github.com/gitctl-pro/gitctl/controller/k8s/extension"
+	"github.com/gitctl-pro/gitctl/controller/k8s/networking"
+	"github.com/gitctl-pro/gitctl/controller/k8s/rabc"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"k8s.io/client-go/rest"
 )
 
 type K8s struct {
-	Cluster        ClusterInterface
 	Deployment     DeploymentInterface
 	Node           NodeInterface
 	Namespace      NamespaceInterface
@@ -27,37 +33,32 @@ type K8s struct {
 	Scale          ScaleInterface
 	ServiceAccount ServiceAccountInterface
 	ClusterRole    ClusterRoleInterface
+	Role           RoleInterface
 	Crd            CrdInterface
 }
 
 func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
 	return &K8s{
-		Cluster:        NewCluster(cfg),
-		Deployment:     NewDeployment(clusterManager),
-		Namespace:      NewNamespace(clusterManager),
-		Node:           NewNode(clusterManager),
-		Pod:            NewPod(clusterManager),
-		ReplicaSet:     NewReplicaset(clusterManager),
-		ConfigMap:      NewConfigmap(clusterManager),
-		Service:        NewService(clusterManager),
-		Ingress:        NewIngress(clusterManager),
-		HPA:            NewHPA(),
-		Job:            NewJob(clusterManager),
-		CronJob:        NewCronjob(clusterManager),
-		Secret:         NewSecret(clusterManager),
-		PVC:            NewPVC(),
-		PV:             NewPV(),
-		Event:          NewEvent(),
-		Scale:          NewScale(),
-		ServiceAccount: NewServiceAccount(clusterManager),
-		ClusterRole:    NewClusterRole(clusterManager),
-		Crd:            NewCrd(clusterManager),
+		Deployment:     apps.NewDeployment(clusterManager),
+		Namespace:      core.NewNamespace(clusterManager),
+		Node:           core.NewNode(clusterManager),
+		Pod:            core.NewPod(clusterManager),
+		ReplicaSet:     apps.NewReplicaset(clusterManager),
+		ConfigMap:      core.NewConfigmap(clusterManager),
+		Service:        core.NewService(clusterManager),
+		Ingress:        networking.NewIngress(clusterManager),
+		HPA:            autoscaling.NewHPA(clusterManager),
+		Job:            batch.NewJob(clusterManager),
+		CronJob:        batch.NewCronjob(clusterManager),
+		Secret:         core.NewSecret(clusterManager),
+		PVC:            core.NewPVC(clusterManager),
+		PV:             core.NewPV(clusterManager),
+		Event:          core.NewEvent(clusterManager),
+		ServiceAccount: core.NewServiceAccount(clusterManager),
+		ClusterRole:    rabc.NewClusterRole(clusterManager),
+		Role:           rabc.NewRole(clusterManager),
+		Crd:            extension.NewCrd(clusterManager),
 	}
-}
-
-type response struct {
-	Err  error       `json:"err,omitempty"`
-	Data interface{} `json:"data,omitempty"`
 }
 
 type DeploymentInterface interface {
@@ -79,12 +80,13 @@ type DeploymentInterface interface {
 type PodInterface interface {
 	ListPod(ctx *gin.Context)
 	Containers(ctx *gin.Context)
+	GetLogs(ctx *gin.Context)
+	Eviction(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Events(ctx *gin.Context)
 	PersistentVolumeClaims(ctx *gin.Context)
 	ExecShell(ctx *gin.Context)
 	ExecShellInfo(ctx *gin.Context)
-	LogDetail(ctx *gin.Context)
 }
 
 type NamespaceInterface interface {
@@ -172,30 +174,33 @@ type CronjobInterface interface {
 type SecretInterface interface {
 	ListSecret(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Create(ctx *gin.Context)
 }
 
 type HPAInterface interface {
-	GetHPA(ctx *gin.Context)
 	ListHPA(ctx *gin.Context)
-	CreateHPA(ctx *gin.Context)
-	PutHPA(ctx *gin.Context)
-	DeleteHPA(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type PVCInterface interface {
 	ListPVC(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Create(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 }
 
 type PVInterface interface {
 	ListPV(ctx *gin.Context)
-	GetPV(ctx *gin.Context)
-	CreatePV(ctx *gin.Context)
-	DeletePV(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type EventInterface interface {
@@ -222,8 +227,8 @@ type ClusterRoleInterface interface {
 	Create(ctx *gin.Context)
 }
 
-type ClusterInterface interface {
-	List(ctx *gin.Context)
+type RoleInterface interface {
+	ListRole(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)

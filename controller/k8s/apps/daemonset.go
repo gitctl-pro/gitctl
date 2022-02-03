@@ -1,28 +1,29 @@
-package k8s
+package apps
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type job struct {
+type daemonset struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewJob(clusterManager k8s.ClusterManager) JobInterface {
+func NewDaemonset(clusterManager k8s.ClusterManager) *daemonset {
 	gvk := &schema.GroupVersionKind{
 		Group:   "apps",
-		Kind:    "job",
+		Kind:    "daemonset",
 		Version: "v1",
 	}
-	return &job{clusterManager: clusterManager, gvk: gvk}
+	return &daemonset{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *job) Get(ctx *gin.Context) {
+func (ctl *daemonset) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -33,14 +34,14 @@ func (ctl *job) Get(ctx *gin.Context) {
 		Namespace(namespace).
 		Get(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *job) Put(ctx *gin.Context) {
+func (ctl *daemonset) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -51,14 +52,14 @@ func (ctl *job) Put(ctx *gin.Context) {
 		Namespace(namespace).
 		Put(name, obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *job) Delete(ctx *gin.Context) {
+func (ctl *daemonset) Delete(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
@@ -68,13 +69,13 @@ func (ctl *job) Delete(ctx *gin.Context) {
 		Namespace(namespace).
 		Delete(name)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err: err,
 	})
 	return
 }
 
-func (ctl *job) Create(ctx *gin.Context) {
+func (ctl *daemonset) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	obj := &runtime.Unknown{}
@@ -85,14 +86,14 @@ func (ctl *job) Create(ctx *gin.Context) {
 		Namespace(namespace).
 		Create(obj)
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *job) ListJob(ctx *gin.Context) {
+func (ctl *daemonset) ListDaemonset(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 
@@ -102,13 +103,21 @@ func (ctl *job) ListJob(ctx *gin.Context) {
 		Namespace(namespace).
 		List(obj, metav1.ListOptions{})
 
-	ctx.JSON(200, &response{
+	ctx.JSON(200, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
 	return
 }
 
-func (ctl *job) Events(ctx *gin.Context) {
+func (ctl *daemonset) Events(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *daemonset) Pods(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *daemonset) Service(ctx *gin.Context) {
 	panic("implement me")
 }
