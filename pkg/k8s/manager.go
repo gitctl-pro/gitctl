@@ -7,10 +7,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/rest"
 )
 
 type ClusterManager interface {
-	Get(name string) (*kubeClient, error)
+	Get(name string) (*rest.Config, error)
 	Create(cluster *v1.Cluster) error
 	Delete(name string) error
 }

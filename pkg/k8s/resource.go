@@ -25,20 +25,24 @@ type resourceVerber struct {
 	Resource       string
 }
 
-func NewResourceVerber(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
-	client, resource, _ := KindForResource(config, gvk)
+func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
+	client, resource, _ := kindForResource(config, gvk)
 	return &resourceVerber{
 		client:   client,
 		Resource: resource,
 	}
 }
 
-func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.Interface, string, error) {
+func kindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.Interface, string, error) {
 	config.GroupVersion = &schema.GroupVersion{
 		Group:   gvk.Group,
 		Version: gvk.Version,
 	}
-	config.APIPath = "/apis"
+	if len(gvk.Group) == 0 {
+		config.APIPath = "/api"
+	} else {
+		config.APIPath = "/apis"
+	}
 	config.NegotiatedSerializer = Codecs.WithoutConversion()
 	client, err := rest.RESTClientFor(config)
 	plural := flect.Pluralize(strings.ToLower(gvk.Kind))
@@ -69,7 +73,6 @@ func (resource *resourceVerber) Delete(name string) error {
 }
 
 func (resource *resourceVerber) Put(name string, object runtime.Object) (err error) {
-
 	req := resource.client.Put().
 		Resource(resource.Resource).
 		Name(name).

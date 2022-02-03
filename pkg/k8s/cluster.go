@@ -13,19 +13,15 @@ var (
 	log = logging.DefaultLogger.WithField("component", "clustermanager")
 )
 
-type kubeClient struct {
-	config *rest.Config
-}
-
 type clusterManager struct {
-	clusters map[string]*kubeClient
+	clusters map[string]*rest.Config
 	resource *resourceVerber
 	lock     sync.Mutex
 }
 
 func NewClusterManager(config *rest.Config) ClusterManager {
-	clusters := make(map[string]*kubeClient, 0)
-	resource := NewResourceVerber(config, &schema.GroupVersionKind{
+	clusters := make(map[string]*rest.Config, 0)
+	resource := NewResource(config, &schema.GroupVersionKind{
 		Kind:    "cluster",
 		Group:   "core.gitctl.com",
 		Version: "v1",
@@ -36,7 +32,7 @@ func NewClusterManager(config *rest.Config) ClusterManager {
 	}
 }
 
-func (m *clusterManager) Get(name string) (*kubeClient, error) {
+func (m *clusterManager) Get(name string) (*rest.Config, error) {
 	client, ok := m.clusters[name]
 	if !ok {
 		m.lock.Lock()
@@ -47,9 +43,7 @@ func (m *clusterManager) Get(name string) (*kubeClient, error) {
 			return nil, err
 		}
 		config, err := util.LoadConfig(cluster.Spec.KubeConfig)
-		m.clusters[name] = &kubeClient{
-			config: config,
-		}
+		m.clusters[name] = config
 		return m.clusters[name], nil
 	}
 	return client, nil

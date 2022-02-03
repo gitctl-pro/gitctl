@@ -2,58 +2,70 @@ package k8s
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/k8s"
+	"k8s.io/client-go/rest"
 )
 
 type K8s struct {
+	Cluster        ClusterInterface
 	Deployment     DeploymentInterface
 	Node           NodeInterface
 	Namespace      NamespaceInterface
-	ReplicaSet     ReplicaSetInterface
+	ReplicaSet     ReplicasetInterface
 	Pod            PodInterface
 	DaemonSet      DaemonsetInterface
-	ConfigMap      ConfigMapInterface
+	ConfigMap      ConfigmapInterface
 	Service        ServiceInterface
 	Ingress        IngressInterface
 	Job            JobInterface
-	CronJob        CronJobInterface
+	CronJob        CronjobInterface
 	Secret         SecretInterface
 	HPA            HPAInterface
 	PV             PVInterface
 	PVC            PVCInterface
 	Event          EventInterface
-	Apply          ApplyInterface
 	Scale          ScaleInterface
 	ServiceAccount ServiceAccountInterface
 	ClusterRole    ClusterRoleInterface
+	Crd            CrdInterface
 }
 
-func NewController() *K8s {
+func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
 	return &K8s{
-		Deployment:     NewDeployment(),
-		Namespace:      NewNamespace(),
-		Node:           NewNode(),
-		Pod:            NewPod(),
-		ReplicaSet:     NewReplicaSet(),
-		ConfigMap:      NewConfigMap(),
-		Service:        NewService(),
-		Ingress:        NewIngress(),
+		Cluster:        NewCluster(cfg),
+		Deployment:     NewDeployment(clusterManager),
+		Namespace:      NewNamespace(clusterManager),
+		Node:           NewNode(clusterManager),
+		Pod:            NewPod(clusterManager),
+		ReplicaSet:     NewReplicaset(clusterManager),
+		ConfigMap:      NewConfigmap(clusterManager),
+		Service:        NewService(clusterManager),
+		Ingress:        NewIngress(clusterManager),
 		HPA:            NewHPA(),
-		Job:            NewJob(),
-		CronJob:        NewCronJob(),
-		Secret:         NewSecret(),
+		Job:            NewJob(clusterManager),
+		CronJob:        NewCronjob(clusterManager),
+		Secret:         NewSecret(clusterManager),
 		PVC:            NewPVC(),
 		PV:             NewPV(),
 		Event:          NewEvent(),
 		Scale:          NewScale(),
-		ServiceAccount: NewServiceAccount(),
-		ClusterRole:    NewClusterRole(),
+		ServiceAccount: NewServiceAccount(clusterManager),
+		ClusterRole:    NewClusterRole(clusterManager),
+		Crd:            NewCrd(clusterManager),
 	}
+}
+
+type response struct {
+	Err  error       `json:"err,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type DeploymentInterface interface {
 	Get(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	List(ctx *gin.Context)
+	Patch(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 	ReplicaSets(ctx *gin.Context)
 	NewReplicaSets(ctx *gin.Context)
@@ -65,7 +77,7 @@ type DeploymentInterface interface {
 }
 
 type PodInterface interface {
-	List(ctx *gin.Context)
+	ListPod(ctx *gin.Context)
 	Containers(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Events(ctx *gin.Context)
@@ -77,7 +89,7 @@ type PodInterface interface {
 
 type NamespaceInterface interface {
 	List(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Create(ctx *gin.Context)
 	Events(ctx *gin.Context)
@@ -85,60 +97,74 @@ type NamespaceInterface interface {
 	LimitRange(ctx *gin.Context)
 }
 
-type ReplicaSetInterface interface {
+type ReplicasetInterface interface {
 	List(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 	Pods(ctx *gin.Context)
 	Service(ctx *gin.Context)
-	Delete(ctx *gin.Context)
 }
 
 type NodeInterface interface {
 	ListNode(ctx *gin.Context)
-	GetNode(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
-type ConfigMapInterface interface {
-	ListConfigMap(ctx *gin.Context)
+type ConfigmapInterface interface {
+	ListConfigmap(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Create(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 }
 
 type DaemonsetInterface interface {
 	ListDaemonset(ctx *gin.Context)
-	GetDaemonset(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Events(ctx *gin.Context)
+	Pods(ctx *gin.Context)
 }
 
 type ServiceInterface interface {
 	ListService(ctx *gin.Context)
-	GetService(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 	Pods(ctx *gin.Context)
 }
 
 type IngressInterface interface {
-	ListEvent(ctx *gin.Context)
+	ListIngress(ctx *gin.Context)
+	Create(ctx *gin.Context)
 	Get(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
 
 type JobInterface interface {
 	ListJob(ctx *gin.Context)
+	Create(ctx *gin.Context)
 	Get(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
 
-type CronJobInterface interface {
-	ListCronJob(ctx *gin.Context)
+type CronjobInterface interface {
+	ListCronjob(ctx *gin.Context)
+	Create(ctx *gin.Context)
 	Get(ctx *gin.Context)
-	Update(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Events(ctx *gin.Context)
 }
@@ -154,7 +180,7 @@ type HPAInterface interface {
 	GetHPA(ctx *gin.Context)
 	ListHPA(ctx *gin.Context)
 	CreateHPA(ctx *gin.Context)
-	UpdateHPA(ctx *gin.Context)
+	PutHPA(ctx *gin.Context)
 	DeleteHPA(ctx *gin.Context)
 }
 
@@ -176,10 +202,6 @@ type EventInterface interface {
 	ListEvents(ctx *gin.Context)
 }
 
-type ApplyInterface interface {
-	Apply(ctx *gin.Context)
-}
-
 type ScaleInterface interface {
 	ScaleResource(ctx *gin.Context)
 }
@@ -187,11 +209,31 @@ type ScaleInterface interface {
 type ServiceAccountInterface interface {
 	ListServiceAccount(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
 }
 
 type ClusterRoleInterface interface {
 	ListClusterRole(ctx *gin.Context)
 	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+}
+
+type ClusterInterface interface {
+	List(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+}
+
+type CrdInterface interface {
+	ListCrd(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
 }

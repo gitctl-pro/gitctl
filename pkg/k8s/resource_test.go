@@ -2,7 +2,9 @@ package k8s
 
 import (
 	gitctl_corev1 "github.com/gitctl-pro/apps/apis/core/v1"
+	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -14,8 +16,8 @@ func TestReourceVerber(t *testing.T) {
 	kubeConfig := "/Users/zsw/.kube/config"
 	restConfig, _ := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	clusterManager := NewClusterManager(restConfig)
-	client, _ := clusterManager.Get("dev")
-	resource := NewResourceVerber(client.config, &schema.GroupVersionKind{
+	config, _ := clusterManager.Get("dev")
+	resource := NewResource(config, &schema.GroupVersionKind{
 		Kind:    "cluster",
 		Group:   "core.gitctl.com",
 		Version: "v1",
@@ -27,8 +29,9 @@ func TestReourceVerber(t *testing.T) {
 	if err != nil {
 		log.Error(err)
 	}
+	assert.Equal(t, cluster.Name, "dev")
 
-	resource = NewResourceVerber(client.config, &schema.GroupVersionKind{
+	resource = NewResource(config, &schema.GroupVersionKind{
 		Kind:    "Deployment",
 		Group:   "apps",
 		Version: "v1",
@@ -39,8 +42,9 @@ func TestReourceVerber(t *testing.T) {
 	if err != nil {
 		log.Error(err)
 	}
+	assert.Equal(t, deployment.Name, "demo")
 
-	extResource := NewResourceVerber(client.config, &schema.GroupVersionKind{
+	extResource := NewResource(config, &schema.GroupVersionKind{
 		Kind:    "CustomResourceDefinition",
 		Group:   "apiextensions.k8s.io",
 		Version: "v1",
@@ -48,6 +52,51 @@ func TestReourceVerber(t *testing.T) {
 	crdList := &extv1.CustomResourceDefinitionList{}
 	extResource.List(crdList, metav1.ListOptions{})
 	for k, v := range crdList.Items {
+		log.Info(k, v.Name)
+	}
+	assert.Greater(t, len(crdList.Items), 0)
+
+	nodeResource := NewResource(config, &schema.GroupVersionKind{
+		Kind:    "node",
+		Group:   "",
+		Version: "v1",
+	})
+	nodeList := &corev1.NodeList{}
+	nodeResource.List(nodeList, metav1.ListOptions{})
+	for k, v := range nodeList.Items {
+		log.Info(k, v.Name)
+	}
+	assert.Greater(t, len(nodeList.Items), 0)
+
+	namespaceResource := NewResource(config, &schema.GroupVersionKind{
+		Kind:    "namespace",
+		Group:   "",
+		Version: "v1",
+	})
+	namespaceList := &corev1.NamespaceList{}
+	err = namespaceResource.List(namespaceList, metav1.ListOptions{})
+	if err != nil {
+		log.Error(err)
+	}
+	for k, v := range namespaceList.Items {
+		log.Info(k, v.Name)
+	}
+	assert.Greater(t, len(namespaceList.Items), 0)
+}
+
+func TestReourcePod(t *testing.T) {
+	kubeConfig := "/Users/zsw/.kube/config"
+	config, _ := clientcmd.BuildConfigFromFlags("", kubeConfig)
+	resource := NewResource(config, &schema.GroupVersionKind{
+		Kind:    "pod",
+		Version: "v1",
+	})
+	list := &corev1.PodList{}
+	err := resource.Namespace("default").List(list, metav1.ListOptions{})
+	if err != nil {
+		log.Error(err)
+	}
+	for k, v := range list.Items {
 		log.Info(k, v.Name)
 	}
 }

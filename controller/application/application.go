@@ -6,7 +6,7 @@ import (
 
 type application struct{}
 
-func (ctl *application) Update(ctx *gin.Context) {
+func (ctl *application) Put(ctx *gin.Context) {
 	panic("implement me")
 }
 

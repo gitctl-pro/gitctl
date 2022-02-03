@@ -3,32 +3,34 @@ package k8s
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type namespace struct {
+type crd struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewNamespace(clusterManager k8s.ClusterManager) NamespaceInterface {
+func NewCrd(clusterManager k8s.ClusterManager) CrdInterface {
 	gvk := &schema.GroupVersionKind{
-		Group:   "",
-		Kind:    "namespace",
+		Group:   "apiextensions.k8s.io",
+		Kind:    "CustomResourceDefinition",
 		Version: "v1",
 	}
-	return &namespace{clusterManager: clusterManager, gvk: gvk}
+	return &crd{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *namespace) Get(ctx *gin.Context) {
+func (ctl *crd) ListCrd(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
-	name := ctx.Param("name")
+	namespace := ctx.Param("namespace")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
-		Get(name, obj)
+		Namespace(namespace).
+		List(obj, metav1.ListOptions{})
 
 	ctx.JSON(200, &response{
 		Err:  err,
@@ -37,13 +39,15 @@ func (ctl *namespace) Get(ctx *gin.Context) {
 	return
 }
 
-func (ctl *namespace) List(ctx *gin.Context) {
+func (ctl *crd) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
 		Put(name, obj)
 
 	ctx.JSON(200, &response{
@@ -53,13 +57,15 @@ func (ctl *namespace) List(ctx *gin.Context) {
 	return
 }
 
-func (ctl *namespace) Put(ctx *gin.Context) {
+func (ctl *crd) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
 		Put(name, obj)
 
 	ctx.JSON(200, &response{
@@ -69,12 +75,14 @@ func (ctl *namespace) Put(ctx *gin.Context) {
 	return
 }
 
-func (ctl *namespace) Delete(ctx *gin.Context) {
+func (ctl *crd) Delete(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
 	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
 		Delete(name)
 
 	ctx.JSON(200, &response{
@@ -83,13 +91,15 @@ func (ctl *namespace) Delete(ctx *gin.Context) {
 	return
 }
 
-func (ctl *namespace) Create(ctx *gin.Context) {
+func (ctl *crd) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
 	obj := &runtime.Unknown{}
 	ctx.BindJSON(obj)
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
 		Create(obj)
 
 	ctx.JSON(200, &response{
@@ -97,16 +107,4 @@ func (ctl *namespace) Create(ctx *gin.Context) {
 		Data: obj,
 	})
 	return
-}
-
-func (ctl *namespace) Events(ctx *gin.Context) {
-	panic("implement me")
-}
-
-func (ctl *namespace) Quota(ctx *gin.Context) {
-	panic("implement me")
-}
-
-func (ctl *namespace) LimitRange(ctx *gin.Context) {
-	panic("implement me")
 }

@@ -5,14 +5,14 @@ import (
 )
 
 func (r *RouteManager) addK8sRoutes(path string) {
-	k8s := k8s.NewController()
+	k8s := k8s.NewController(nil, nil)
 
 	// route: /k8s/node
 	rg := r.gin.Group(path + "/node")
 	rg.Use()
 	{
 		rg.GET("", k8s.Node.ListNode)
-		rg.GET("/:name", k8s.Node.GetNode)
+		rg.GET("/:name", k8s.Node.Get)
 	}
 
 	// route: /k8s/namespace
@@ -20,8 +20,8 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg.Use()
 	{
 		rg.GET("", k8s.Namespace.List)
-		rg.POST("/:name/create", k8s.Namespace.Create)
-		rg.POST("/:name/update", k8s.Namespace.Update)
+		rg.POST("/:name", k8s.Namespace.Create)
+		rg.PUT("/:name", k8s.Namespace.Put)
 		rg.GET("/:name", k8s.Namespace.List)
 		rg.DELETE("/:name", k8s.Namespace.Delete)
 	}
@@ -32,7 +32,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	{
 		rg.GET("/:namespace", k8s.Deployment.List)
 		rg.GET("/:namespace/:name", k8s.Deployment.Get)
-		rg.POST("/:namespace/:name/update", k8s.Deployment.Update)
+		rg.PUT("/:namespace/:name", k8s.Deployment.Put)
 
 		rg.GET("/:namespace/:name/events", k8s.Deployment.Events)
 		rg.GET("/:namespace/:name/repliaces", k8s.Deployment.ReplicaSets)
@@ -83,9 +83,9 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/ingress")
 	rg.Use()
 	{
-		rg.GET("", k8s.Ingress.ListEvent)
+		rg.GET("", k8s.Ingress.ListIngress)
 		rg.GET("/:namespace/:name", k8s.Ingress.Get)
-		rg.POST("/:namespace/:name/update", k8s.Ingress.Update)
+		rg.PUT("/:namespace/:name/update", k8s.Ingress.Put)
 		rg.GET("/:namespace/:name/events", k8s.Ingress.Events)
 		rg.DELETE("/:namespace/:name", k8s.Ingress.Delete)
 	}
@@ -105,9 +105,9 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/cronjob")
 	rg.Use()
 	{
-		rg.GET("", k8s.CronJob.ListCronJob)
+		rg.GET("", k8s.CronJob.ListCronjob)
 		rg.GET("/:namespace/:name", k8s.CronJob.Get)
-		rg.POST("/:namespace/:name/update", k8s.CronJob.Update)
+		rg.PUT("/:namespace/:name/update", k8s.CronJob.Put)
 		rg.DELETE("/:namespace/:name", k8s.Job.Delete)
 		rg.GET("/:namespace/:name/events", k8s.CronJob.Events)
 	}
@@ -152,8 +152,8 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	{
 		rg.GET("", k8s.HPA.ListHPA)
 		rg.GET("/:namespace/:name", k8s.HPA.GetHPA)
-		rg.POST("/:namespace/:name/create", k8s.HPA.UpdateHPA)
-		rg.POST("/:namespace/:name/update", k8s.HPA.UpdateHPA)
+		rg.POST("/:namespace/:name/create", k8s.HPA.CreateHPA)
+		rg.PUT("/:namespace/:name", k8s.HPA.PutHPA)
 		rg.DELETE("/:namespace/:name", k8s.HPA.DeleteHPA)
 	}
 
@@ -162,7 +162,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg.Use()
 	{
 		rg.GET("", k8s.Service.ListService)
-		rg.GET("/:namespace/:name", k8s.Service.GetService)
+		rg.GET("/:namespace/:name", k8s.Service.Get)
 		rg.GET("/:namespace/:name/pod", k8s.Service.Pods)
 		rg.GET("/:namespace/:name/event", k8s.Service.Events)
 
@@ -172,10 +172,10 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/configmap")
 	rg.Use()
 	{
-		rg.GET("/list", k8s.ConfigMap.ListConfigMap)
+		rg.GET("/list", k8s.ConfigMap.ListConfigmap)
 		rg.GET("/:namespace/:name", k8s.ConfigMap.Get)
 		rg.POST("/:namespace/:name/create", k8s.ConfigMap.Create)
-		rg.POST("/:namespace/:name/update", k8s.ConfigMap.Update)
+		rg.PUT("/:namespace/:name/update", k8s.ConfigMap.Put)
 		rg.DELETE("/:namespace/:name", k8s.ConfigMap.Delete)
 	}
 

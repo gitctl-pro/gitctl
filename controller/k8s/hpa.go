@@ -20,7 +20,7 @@ func (ctl *hpa) CreateHPA(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (ctl *hpa) UpdateHPA(ctx *gin.Context) {
+func (ctl *hpa) PutHPA(ctx *gin.Context) {
 	panic("implement me")
 }
 
