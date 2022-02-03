@@ -1,6 +1,9 @@
 package pipeline
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"k8s.io/client-go/rest"
+)
 
 type PipelineController struct {
 	History     History
@@ -12,22 +15,22 @@ type PipelineController struct {
 	Trigger     Trigger
 }
 
-func NewController() *PipelineController {
+func NewController(config *rest.Config) *PipelineController {
 	return &PipelineController{
 		History:     NewHistory(),
 		Hub:         NewHub(),
-		Pipeline:    NewPipeline(),
-		PipelineRun: NewPipelineRun(),
-		Task:        NewTask(),
-		TaskRun:     NewTaskRun(),
-		Trigger:     NewTrigger(),
+		Pipeline:    NewPipeline(config),
+		PipelineRun: NewPipelineRun(config),
+		Task:        NewTask(config),
+		TaskRun:     NewTaskRun(config),
+		Trigger:     NewTrigger(config),
 	}
 }
 
 type History interface {
-	GetHistory(ctx *gin.Context)
 	ListHistories(ctx *gin.Context)
-	DeleteHistory(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type Hub interface {
@@ -35,39 +38,39 @@ type Hub interface {
 }
 
 type Pipeline interface {
-	GetPipeline(ctx *gin.Context)
-	CreatePipeline(ctx *gin.Context)
-	UpdatePipeline(ctx *gin.Context)
-	DeletePipeline(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	ListPipeline(ctx *gin.Context)
 }
 
 type PipelineRun interface {
-	GetPipelineRun(ctx *gin.Context)
-	CreatePipelineRun(ctx *gin.Context)
-	DeletePipelineRun(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 	ListPipelineRun(ctx *gin.Context)
 }
 
 type Task interface {
-	GetTask(ctx *gin.Context)
-	CreateTask(ctx *gin.Context)
-	UpdateTask(ctx *gin.Context)
 	ListTask(ctx *gin.Context)
-	DeleteTask(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 
 type TaskRun interface {
 	ListTaskRun(ctx *gin.Context)
-	GetTaskRun(ctx *gin.Context)
-	CreateTaskRun(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
 	Log(ctx *gin.Context)
 }
 
 type Trigger interface {
-	GetTrigger(ctx *gin.Context)
-	CreateTrigger(ctx *gin.Context)
-	UpdateTrigger(ctx *gin.Context)
 	ListTrigger(ctx *gin.Context)
-	DeleteTrigger(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }

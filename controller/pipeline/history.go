@@ -2,24 +2,20 @@ package pipeline
 
 import "github.com/gin-gonic/gin"
 
-type historyCtl struct{}
+type history struct{}
 
-func NewHistory() History {
-	return &historyCtl{}
+func NewHistory() *history {
+	return &history{}
 }
 
-func (ctl *historyCtl) GetHistory(ctx *gin.Context) {
-
+func (ctl *history) ListHistories(ctx *gin.Context) {
+	panic("implement me")
 }
 
-func (ctl *historyCtl) ListHistories(ctx *gin.Context) {
-
-}
-
-func (ctl *historyCtl) Delete(ctx *gin.Context) {
+func (ctl *history) Get(ctx *gin.Context) {
 
 }
 
-func (ctl *historyCtl) DeleteHistory(ctx *gin.Context) {
+func (ctl *history) Delete(ctx *gin.Context) {
 	panic("implement me")
 }

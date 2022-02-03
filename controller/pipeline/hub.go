@@ -2,12 +2,12 @@ package pipeline
 
 import "github.com/gin-gonic/gin"
 
-type hubCtl struct{}
+type hub struct{}
 
 func NewHub() Hub {
-	return &hubCtl{}
+	return &hub{}
 }
 
-func (ctl *hubCtl) ListHubs(ctx *gin.Context) {
+func (ctl *hub) ListHubs(ctx *gin.Context) {
 
 }
