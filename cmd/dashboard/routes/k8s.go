@@ -228,4 +228,16 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.POST("/:namespace/:name", k8s.Role.Create)
 		rg.PUT("/:namespace/:name", k8s.Role.Put)
 	}
+
+	// route: /k8s/storageclcass
+	rg = r.gin.Group(path + "/storageClass")
+	rg.Use()
+	{
+		rg.GET("", k8s.StorageClass.ListStorageClass)
+		rg.GET("/:name", k8s.StorageClass.Get)
+		rg.DELETE("/:name", k8s.StorageClass.Delete)
+		rg.POST("/:name", k8s.StorageClass.Create)
+		rg.PUT("/:name", k8s.StorageClass.Put)
+	}
+
 }

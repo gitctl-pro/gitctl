@@ -2,6 +2,10 @@ package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
+	"github.com/gitctl-pro/gitctl/pkg/k8s"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 )
@@ -20,26 +24,78 @@ func NewTask(config *rest.Config) *task {
 	return &task{config: config, gvk: gvk}
 }
 
-func (t *task) ListTask(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *task) Create(ctx *gin.Context) {
+	namespace := ctx.Param("namespace")
+	obj := &runtime.Unknown{}
+	ctx.BindJSON(obj)
+
+	err := k8s.NewResource(ctl.config, ctl.gvk).
+		Namespace(namespace).
+		Create(obj)
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
 }
 
-func (t *task) Get(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *task) Get(ctx *gin.Context) {
+	name := ctx.Param("name")
+	namespace := ctx.Param("namespace")
+
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(ctl.config, ctl.gvk).
+		Namespace(namespace).
+		Get(name, obj)
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
 }
 
-func (t *task) Create(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *task) ListTask(ctx *gin.Context) {
+	namespace := ctx.Param("namespace")
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(ctl.config, ctl.gvk).
+		Namespace(namespace).
+		List(obj, metav1.ListOptions{})
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
 }
 
-func (t *task) Put(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *task) Delete(ctx *gin.Context) {
+	name := ctx.Param("name")
+	namespace := ctx.Param("namespace")
+
+	err := k8s.NewResource(ctl.config, ctl.gvk).
+		Namespace(namespace).
+		Delete(name)
+
+	ctx.JSON(200, &controller.Response{
+		Err: err,
+	})
+	return
 }
 
-func (t *task) Delete(ctx *gin.Context) {
-	panic("implement me")
-}
+func (ctl *task) Put(ctx *gin.Context) {
+	namespace := ctx.Param("namespace")
+	name := ctx.Param("name")
 
-func (t *task) Log(ctx *gin.Context) {
-	panic("implement me")
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(ctl.config, ctl.gvk).
+		Namespace(namespace).
+		Put(name, obj)
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
 }

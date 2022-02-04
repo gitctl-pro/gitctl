@@ -9,6 +9,7 @@ import (
 	"github.com/gitctl-pro/gitctl/controller/k8s/extension"
 	"github.com/gitctl-pro/gitctl/controller/k8s/networking"
 	"github.com/gitctl-pro/gitctl/controller/k8s/rabc"
+	"github.com/gitctl-pro/gitctl/controller/k8s/storage"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"k8s.io/client-go/rest"
 )
@@ -35,6 +36,7 @@ type K8s struct {
 	ClusterRole    ClusterRoleInterface
 	Role           RoleInterface
 	Crd            CrdInterface
+	StorageClass   StorageClassInterface
 }
 
 func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
@@ -58,6 +60,7 @@ func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
 		ClusterRole:    rabc.NewClusterRole(clusterManager),
 		Role:           rabc.NewRole(clusterManager),
 		Crd:            extension.NewCrd(clusterManager),
+		StorageClass:   storage.NewStorageClass(clusterManager),
 	}
 }
 
@@ -237,6 +240,14 @@ type RoleInterface interface {
 
 type CrdInterface interface {
 	ListCrd(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+}
+
+type StorageClassInterface interface {
+	ListStorageClass(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)

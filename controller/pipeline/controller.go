@@ -2,7 +2,7 @@ package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
-	"k8s.io/client-go/rest"
+	"github.com/gitctl-pro/gitctl/pkg/k8s"
 )
 
 type PipelineController struct {
@@ -15,7 +15,8 @@ type PipelineController struct {
 	Trigger     Trigger
 }
 
-func NewController(config *rest.Config) *PipelineController {
+func NewController(clusterManager k8s.ClusterManager) *PipelineController {
+	config, _ := clusterManager.Get("dev")
 	return &PipelineController{
 		History:     NewHistory(),
 		Hub:         NewHub(),

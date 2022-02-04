@@ -41,6 +41,24 @@ func (ctl *deployment) Get(ctx *gin.Context) {
 	return
 }
 
+func (ctl *deployment) Create(ctx *gin.Context) {
+	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
+	obj := &runtime.Unknown{}
+	ctx.BindJSON(obj)
+
+	cfg, _ := ctl.clusterManager.Get(cluster)
+	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
+		Create(obj)
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
+}
+
 func (ctl *deployment) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")

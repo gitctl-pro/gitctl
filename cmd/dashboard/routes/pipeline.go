@@ -14,14 +14,14 @@ func (r *RouteManager) addPipelineRoutes(path string) {
 
 		rg.GET("/trigger", pipeline.Trigger.ListTrigger)
 		rg.GET("/trigger/:name", pipeline.Trigger.Get)
-		rg.POST("/trigger/:name/create", pipeline.Trigger.Create)
-		rg.PUT("/trigger/:name/update", pipeline.Trigger.Put)
+		rg.POST("/trigger/:name", pipeline.Trigger.Create)
+		rg.PUT("/trigger/:name", pipeline.Trigger.Put)
 		rg.DELETE("/trigger/:name", pipeline.Trigger.Delete)
 
 		rg.GET("/pipeline", pipeline.Trigger.ListTrigger)
 		rg.GET("/pipeline/:name", pipeline.Trigger.Get)
-		rg.POST("/pipeline/:name/create", pipeline.Trigger.Create)
-		rg.PUT("/pipeline/:name/update", pipeline.Trigger.Put)
+		rg.POST("/pipeline/:name", pipeline.Trigger.Create)
+		rg.PUT("/pipeline/:name", pipeline.Trigger.Put)
 		rg.DELETE("/pipeline/:name", pipeline.Pipeline.Delete)
 
 		rg.GET("/pipelineRun/:name", pipeline.PipelineRun.Get)
