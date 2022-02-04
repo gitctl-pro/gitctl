@@ -1,4 +1,4 @@
-package apps
+package networking
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,30 +9,29 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type statefulset struct {
+type ingressClass struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewStatefulSet(clusterManager k8s.ClusterManager) *statefulset {
+func NewIngressClass(clusterManager k8s.ClusterManager) *ingressClass {
 	gvk := &schema.GroupVersionKind{
-		Group:   "apps",
-		Kind:    "statefulset",
+		Group:   "networking.k8s.io",
+		Kind:    "ingressClass",
 		Version: "v1",
 	}
-	return &statefulset{clusterManager: clusterManager, gvk: gvk}
+	return &ingressClass{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *statefulset) Get(ctx *gin.Context) {
+func (ctl *ingressClass) ListIngressClass(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
-	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
-		Get(name, obj)
+		List(obj, metav1.ListOptions{})
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,
@@ -41,41 +40,7 @@ func (ctl *statefulset) Get(ctx *gin.Context) {
 	return
 }
 
-func (ctl *statefulset) Put(ctx *gin.Context) {
-	cluster := ctx.Param("cluster")
-	namespace := ctx.Param("namespace")
-	name := ctx.Param("name")
-
-	cfg, _ := ctl.clusterManager.Get(cluster)
-	obj := &runtime.Unknown{}
-	err := k8s.NewResource(cfg, ctl.gvk).
-		Namespace(namespace).
-		Put(name, obj)
-
-	ctx.JSON(200, &controller.Response{
-		Err:  err,
-		Data: obj,
-	})
-	return
-}
-
-func (ctl *statefulset) Delete(ctx *gin.Context) {
-	cluster := ctx.Param("cluster")
-	namespace := ctx.Param("namespace")
-	name := ctx.Param("name")
-
-	cfg, _ := ctl.clusterManager.Get(cluster)
-	err := k8s.NewResource(cfg, ctl.gvk).
-		Namespace(namespace).
-		Delete(name)
-
-	ctx.JSON(200, &controller.Response{
-		Err: err,
-	})
-	return
-}
-
-func (ctl *statefulset) Create(ctx *gin.Context) {
+func (ctl *ingressClass) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 	obj := &runtime.Unknown{}
@@ -93,15 +58,16 @@ func (ctl *statefulset) Create(ctx *gin.Context) {
 	return
 }
 
-func (ctl *statefulset) ListStatefulSet(ctx *gin.Context) {
+func (ctl *ingressClass) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
+	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
-		List(obj, metav1.ListOptions{})
+		Put(name, obj)
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,
@@ -110,14 +76,40 @@ func (ctl *statefulset) ListStatefulSet(ctx *gin.Context) {
 	return
 }
 
-func (ctl *statefulset) Events(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *ingressClass) Put(ctx *gin.Context) {
+	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
+	name := ctx.Param("name")
+
+	cfg, _ := ctl.clusterManager.Get(cluster)
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
+		Put(name, obj)
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Data: obj,
+	})
+	return
 }
 
-func (ctl *statefulset) Pods(ctx *gin.Context) {
-	panic("implement me")
+func (ctl *ingressClass) Delete(ctx *gin.Context) {
+	cluster := ctx.Param("cluster")
+	namespace := ctx.Param("namespace")
+	name := ctx.Param("name")
+
+	cfg, _ := ctl.clusterManager.Get(cluster)
+	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
+		Delete(name)
+
+	ctx.JSON(200, &controller.Response{
+		Err: err,
+	})
+	return
 }
 
-func (ctl *statefulset) Service(ctx *gin.Context) {
+func (ctl *ingressClass) Events(ctx *gin.Context) {
 	panic("implement me")
 }

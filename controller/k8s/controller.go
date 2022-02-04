@@ -16,14 +16,17 @@ import (
 
 type K8s struct {
 	Deployment     DeploymentInterface
+	StatefulSet    StatefulSetInterface
+	DaemonSet      DaemonsetInterface
+	ReplicaSet     ReplicasetInterface
 	Node           NodeInterface
 	Namespace      NamespaceInterface
-	ReplicaSet     ReplicasetInterface
 	Pod            PodInterface
-	DaemonSet      DaemonsetInterface
 	ConfigMap      ConfigmapInterface
 	Service        ServiceInterface
 	Ingress        IngressInterface
+	IngressClass   IngressClassInterface
+	NetworkPolicy  NetworkPolicyInterface
 	Job            JobInterface
 	CronJob        CronjobInterface
 	Secret         SecretInterface
@@ -42,13 +45,17 @@ type K8s struct {
 func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
 	return &K8s{
 		Deployment:     apps.NewDeployment(clusterManager),
+		ReplicaSet:     apps.NewReplicaset(clusterManager),
+		DaemonSet:      apps.NewDaemonset(clusterManager),
+		StatefulSet:    apps.NewStatefulSet(clusterManager),
 		Namespace:      core.NewNamespace(clusterManager),
 		Node:           core.NewNode(clusterManager),
 		Pod:            core.NewPod(clusterManager),
-		ReplicaSet:     apps.NewReplicaset(clusterManager),
 		ConfigMap:      core.NewConfigmap(clusterManager),
 		Service:        core.NewService(clusterManager),
 		Ingress:        networking.NewIngress(clusterManager),
+		IngressClass:   networking.NewIngressClass(clusterManager),
+		NetworkPolicy:  networking.NewNetworkPolicy(clusterManager),
 		HPA:            autoscaling.NewHPA(clusterManager),
 		Job:            batch.NewJob(clusterManager),
 		CronJob:        batch.NewCronjob(clusterManager),
@@ -100,6 +107,16 @@ type NamespaceInterface interface {
 	Events(ctx *gin.Context)
 	Quota(ctx *gin.Context)
 	LimitRange(ctx *gin.Context)
+}
+
+type StatefulSetInterface interface {
+	ListStatefulSet(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Events(ctx *gin.Context)
+	Pods(ctx *gin.Context)
+	Service(ctx *gin.Context)
 }
 
 type ReplicasetInterface interface {
@@ -248,6 +265,22 @@ type CrdInterface interface {
 
 type StorageClassInterface interface {
 	ListStorageClass(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+}
+
+type NetworkPolicyInterface interface {
+	ListNetworkPolicy(ctx *gin.Context)
+	Get(ctx *gin.Context)
+	Put(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	Create(ctx *gin.Context)
+}
+
+type IngressClassInterface interface {
+	ListIngressClass(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Put(ctx *gin.Context)
 	Delete(ctx *gin.Context)

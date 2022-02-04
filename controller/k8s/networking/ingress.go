@@ -16,7 +16,7 @@ type ingress struct {
 
 func NewIngress(clusterManager k8s.ClusterManager) *ingress {
 	gvk := &schema.GroupVersionKind{
-		Group:   "network",
+		Group:   "networking.k8s.io",
 		Kind:    "ingress",
 		Version: "v1",
 	}
