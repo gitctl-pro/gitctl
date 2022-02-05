@@ -6,6 +6,7 @@ import (
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"net/http"
 )
 
 type limitRange struct {
@@ -103,7 +104,7 @@ func (ctl *limitRange) Create(ctx *gin.Context) {
 		Namespace(namespace).
 		Create(obj)
 
-	ctx.JSON(200, &controller.Response{
+	ctx.JSON(http.StatusCreated, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})

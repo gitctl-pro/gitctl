@@ -6,6 +6,7 @@ import (
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"net/http"
 )
 
 type clusterRole struct {
@@ -93,7 +94,7 @@ func (ctl *clusterRole) Create(ctx *gin.Context) {
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Create(obj)
 
-	ctx.JSON(200, &controller.Response{
+	ctx.JSON(http.StatusCreated, &controller.Response{
 		Err:  err,
 		Data: obj,
 	})
