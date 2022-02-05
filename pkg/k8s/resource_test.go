@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -106,4 +107,20 @@ func TestResourceCRD(t *testing.T) {
 		log.Info(k, v.Name)
 	}
 	assert.Greater(t, len(crdList.Items), 0)
+}
+
+func TestResourceIngress(t *testing.T) {
+	resource := NewResource(cfg, &schema.GroupVersionKind{
+		Group:   "networking.k8s.io",
+		Kind:    "ingress",
+		Version: "v1",
+	})
+	list := &networkingv1.IngressList{}
+	err := resource.Namespace("default").List(list, metav1.ListOptions{})
+	if err != nil {
+		log.Error(err)
+	}
+	for k, v := range list.Items {
+		log.Info(k, v.Name)
+	}
 }

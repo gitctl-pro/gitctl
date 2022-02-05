@@ -6,7 +6,7 @@ import (
 
 func (r *RouteManager) addPipelineRoutes(path string) {
 	rg := r.gin.Group(path)
-	pipeline := pipeline.NewController(nil)
+	pipeline := pipeline.NewController(r.clusterManager)
 	rg.Use()
 	{
 		rg.GET("/history", pipeline.History.ListHistories)

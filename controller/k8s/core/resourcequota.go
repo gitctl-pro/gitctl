@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -42,13 +43,12 @@ func (ctl *resourceQuota) Get(ctx *gin.Context) {
 func (ctl *resourceQuota) List(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
-	name := ctx.Param("name")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
-		Put(name, obj)
+		List(obj, metav1.ListOptions{})
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,

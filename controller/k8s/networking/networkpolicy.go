@@ -61,7 +61,7 @@ func (ctl *networkPolicy) Get(ctx *gin.Context) {
 	cfg, _ := ctl.clusterManager.Get(cluster)
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
-		Put(name, obj)
+		Get(name, obj)
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,

@@ -6,7 +6,7 @@ import (
 
 func (r *RouteManager) addAppsRoutes(path string) {
 	rg := r.gin.Group(path)
-	apps := apps.NewController(nil)
+	apps := apps.NewController(r.clusterManager)
 	// route: /apps/app
 	rg = r.gin.Group(path + "/app")
 	rg.Use()

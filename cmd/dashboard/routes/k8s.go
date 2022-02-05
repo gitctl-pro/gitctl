@@ -5,7 +5,7 @@ import (
 )
 
 func (r *RouteManager) addK8sRoutes(path string) {
-	k8s := k8s.NewController(nil, nil)
+	k8s := k8s.NewController(r.kubeConfig, r.clusterManager)
 
 	// route: /k8s/node
 	rg := r.gin.Group(path + "/node")
@@ -50,7 +50,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/replicaset")
 	rg.Use()
 	{
-		rg.GET("/list", k8s.ReplicaSet.List)
+		rg.GET("/:namespace", k8s.ReplicaSet.List)
 		rg.GET("/:namespace/:name", k8s.ReplicaSet.Get)
 		rg.GET("/:namespace/:name/pod", k8s.ReplicaSet.Pods)
 		rg.GET("/:namespace/:name/service", k8s.ReplicaSet.Service)
@@ -83,11 +83,10 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/ingress")
 	rg.Use()
 	{
-		rg.GET("", k8s.Ingress.ListIngress)
+		rg.GET("/:namespace", k8s.Ingress.ListIngress)
 		rg.GET("/:namespace/:name", k8s.Ingress.Get)
 		rg.POST("/:namespace/:name", k8s.Ingress.Create)
 		rg.PUT("/:namespace/:name", k8s.Ingress.Put)
-		rg.PUT("/:namespace/:name/update", k8s.Ingress.Put)
 		rg.GET("/:namespace/:name/events", k8s.Ingress.Events)
 		rg.DELETE("/:namespace/:name", k8s.Ingress.Delete)
 	}
@@ -96,7 +95,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/job")
 	rg.Use()
 	{
-		rg.GET("", k8s.Job.ListJob)
+		rg.GET("/:namespace", k8s.Job.ListJob)
 		rg.GET("/:namespace/:name", k8s.Job.Get)
 		rg.POST("/:namespace/:name", k8s.Job.Create)
 		rg.PUT("/:namespace/:name", k8s.Job.Put)
@@ -108,7 +107,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/cronjob")
 	rg.Use()
 	{
-		rg.GET("", k8s.CronJob.ListCronjob)
+		rg.GET("/:namespace", k8s.CronJob.ListCronjob)
 		rg.GET("/:namespace/:name", k8s.CronJob.Get)
 		rg.PUT("/:namespace/:name/update", k8s.CronJob.Put)
 		rg.POST("/:namespace/:name", k8s.CronJob.Create)
@@ -119,7 +118,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/secret")
 	rg.Use()
 	{
-		rg.GET("", k8s.Secret.ListSecret)
+		rg.GET("/:namespace", k8s.Secret.ListSecret)
 		rg.GET("/:namespace/:name", k8s.Secret.Get)
 		rg.POST("/:namespace/:name", k8s.Secret.Create)
 		rg.PUT("/:namespace/:name", k8s.Secret.Put)
@@ -157,7 +156,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/hpa")
 	rg.Use()
 	{
-		rg.GET("", k8s.HPA.ListHPA)
+		rg.GET("/:namespace", k8s.HPA.ListHPA)
 		rg.GET("/:namespace/:name", k8s.HPA.Get)
 		rg.POST("/:namespace/:name", k8s.HPA.Create)
 		rg.PUT("/:namespace/:name", k8s.HPA.Put)
@@ -168,7 +167,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/service")
 	rg.Use()
 	{
-		rg.GET("", k8s.Service.ListService)
+		rg.GET("/:namespace", k8s.Service.ListService)
 		rg.GET("/:namespace/:name", k8s.Service.Get)
 		rg.POST("/:namespace/:name", k8s.Service.Create)
 		rg.PUT("/:namespace/:name", k8s.Service.Put)
@@ -182,29 +181,22 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	rg = r.gin.Group(path + "/configmap")
 	rg.Use()
 	{
-		rg.GET("", k8s.ConfigMap.ListConfigmap)
+		rg.GET("/:namespace", k8s.ConfigMap.ListConfigmap)
 		rg.GET("/:namespace/:name", k8s.ConfigMap.Get)
 		rg.POST("/:namespace/:name", k8s.ConfigMap.Create)
 		rg.PUT("/:namespace/:name", k8s.ConfigMap.Put)
 		rg.DELETE("/:namespace/:name", k8s.ConfigMap.Delete)
 	}
 
-	// route: /k8s/scale
-	rg = r.gin.Group(path + "/scale")
-	rg.Use()
-	{
-		rg.POST("/:kind/:namespace/:name", k8s.Scale.ScaleResource)
-	}
-
-	// route: /k8s/serviceAccount
+	// route: /k8s/serviceaccount
 	rg = r.gin.Group(path + "/serviceaccount")
 	rg.Use()
 	{
 		rg.GET("", k8s.ServiceAccount.ListServiceAccount)
 		rg.GET("/:name", k8s.ServiceAccount.Get)
 		rg.DELETE("/:name", k8s.ServiceAccount.Delete)
-		rg.POST("/:namespace/:name", k8s.ServiceAccount.Create)
-		rg.PUT("/:namespace/:name", k8s.ServiceAccount.Put)
+		rg.POST("/:name", k8s.ServiceAccount.Create)
+		rg.PUT("/:name", k8s.ServiceAccount.Put)
 	}
 
 	// route: /k8s/clusterRole
@@ -219,10 +211,10 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	}
 
 	// route: /k8s/role
-	rg = r.gin.Group(path + "/clusterRole")
+	rg = r.gin.Group(path + "/role")
 	rg.Use()
 	{
-		rg.GET("", k8s.Role.ListRole)
+		rg.GET("/:namespace", k8s.Role.ListRole)
 		rg.GET("/:namespace/:name", k8s.Role.Get)
 		rg.DELETE("/:namespace/:name", k8s.Role.Delete)
 		rg.POST("/:namespace/:name", k8s.Role.Create)
@@ -230,7 +222,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 	}
 
 	// route: /k8s/storageclcass
-	rg = r.gin.Group(path + "/storageClass")
+	rg = r.gin.Group(path + "/storageclass")
 	rg.Use()
 	{
 		rg.GET("", k8s.StorageClass.ListStorageClass)
@@ -240,4 +232,25 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.PUT("/:name", k8s.StorageClass.Put)
 	}
 
+	// route: /k8s/networkpolicy
+	rg = r.gin.Group(path + "/networkpolicy")
+	rg.Use()
+	{
+		rg.GET("/:namespace", k8s.NetworkPolicy.ListNetworkPolicy)
+		rg.GET("/:namespace/:name", k8s.NetworkPolicy.Get)
+		rg.DELETE("/:namespace/:name", k8s.NetworkPolicy.Delete)
+		rg.POST("/:namespace/:name", k8s.NetworkPolicy.Create)
+		rg.PUT("/:namespace/:name", k8s.NetworkPolicy.Put)
+	}
+
+	// route: /k8s/ingressclass
+	rg = r.gin.Group(path + "/ingressclass")
+	rg.Use()
+	{
+		rg.GET("", k8s.IngressClass.ListIngressClass)
+		rg.GET("/:name", k8s.IngressClass.Get)
+		rg.DELETE("/:name", k8s.IngressClass.Delete)
+		rg.POST("/:name", k8s.IngressClass.Create)
+		rg.PUT("/:name", k8s.IngressClass.Put)
+	}
 }

@@ -6,7 +6,7 @@ import (
 
 func (r *RouteManager) addClusterRoutes(path string) {
 	rg := r.gin.Group(path)
-	cluster := cluster.NewController(nil)
+	cluster := cluster.NewController(r.kubeConfig)
 	// route: /cluster
 	rg = r.gin.Group(path)
 	rg.Use()

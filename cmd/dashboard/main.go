@@ -11,6 +11,8 @@ import (
 )
 
 type options struct {
+	master     string
+	kubeConfig string
 	configFile string
 	dataDir    string
 }
@@ -21,6 +23,8 @@ var (
 )
 
 func InitFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&o.master, "master", "", "master url")
+	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	fs.StringVar(&o.configFile, "config", "config/route.yml", "")
 	fs.StringVar(&o.dataDir, "data", "data/", "")
 }
@@ -38,5 +42,6 @@ func main() {
 
 	config := setup.InitConfig()
 	go setup.SetupMysqlConn(config)
-	routes.NewRouteManager(config).Run()
+	clusterManager, kubeConfig, _ := setup.SetupK8s(o.kubeConfig)
+	routes.NewRouteManager(kubeConfig, clusterManager, config).Run()
 }

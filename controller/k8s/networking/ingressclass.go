@@ -67,7 +67,7 @@ func (ctl *ingressClass) Get(ctx *gin.Context) {
 	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
-		Put(name, obj)
+		Get(name, obj)
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,
