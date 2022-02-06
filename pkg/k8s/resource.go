@@ -26,14 +26,14 @@ type resourceVerber struct {
 }
 
 func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
-	client, resource, _ := kindForResource(config, gvk)
+	client, resource, _ := KindForResource(config, gvk)
 	return &resourceVerber{
 		client:   client,
 		resource: resource,
 	}
 }
 
-func kindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.Interface, string, error) {
+func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.Interface, string, error) {
 	config.GroupVersion = &schema.GroupVersion{
 		Group:   gvk.Group,
 		Version: gvk.Version,
