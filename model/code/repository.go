@@ -17,7 +17,7 @@ type Repository struct {
 }
 
 func (a *Repository) TableName() string {
-	return "Repository"
+	return "code_repository"
 }
 
 type RepoPageOption struct {
@@ -30,7 +30,7 @@ type RepoPageOption struct {
 }
 
 func ListRepository(query *RepoPageOption) (apps []*Repository, total int64) {
-	tx := model.Db.Table("repository")
+	tx := model.Db.Table("code_repository")
 
 	if query.TimeRange != nil {
 		timeRange := query.TimeRange
@@ -59,7 +59,7 @@ func ListRepository(query *RepoPageOption) (apps []*Repository, total int64) {
 }
 
 func GetRepository(query *RepoPageOption) (app *Repository, err error) {
-	tx := model.Db.Table("repository")
+	tx := model.Db.Table("code_repository")
 	if len(query.Name) > 0 {
 		tx = tx.Where("name = ? ", query.Name)
 	}

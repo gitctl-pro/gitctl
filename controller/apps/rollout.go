@@ -16,7 +16,7 @@ type rollout struct {
 
 func NewRollout(clusterManager k8s.ClusterManager) *rollout {
 	gvk := &schema.GroupVersionKind{
-		Group:   "apps",
+		Group:   "apps.gitclt.com",
 		Kind:    "rollout",
 		Version: "v1",
 	}

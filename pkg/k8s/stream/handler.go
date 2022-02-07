@@ -39,8 +39,6 @@ type StreamHandler struct {
 	WsConn     *websocket.Conn
 	ResizeChan chan remotecommand.TerminalSize
 	doneChan   chan struct{}
-	inputCh    chan []byte
-	outputCh   chan []byte
 	width      uint16
 	height     uint16
 }
@@ -118,8 +116,6 @@ func (handler *StreamHandler) Read(p []byte) (size int, err error) {
 	}
 
 	switch msg.Op {
-	case "bind":
-		//log.Println(msg)
 	case "stdin":
 		return copy(p, msg.Data), nil
 	case "resize":
@@ -132,7 +128,6 @@ func (handler *StreamHandler) Read(p []byte) (size int, err error) {
 }
 
 func (handler *StreamHandler) Close() error {
-	close(handler.outputCh)
-	close(handler.inputCh)
+	handler.WsConn.Close()
 	return nil
 }

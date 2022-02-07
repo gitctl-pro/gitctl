@@ -16,7 +16,7 @@ type application struct {
 
 func NewApplication(clusterManager k8s.ClusterManager) *application {
 	gvk := &schema.GroupVersionKind{
-		Group:   "apps",
+		Group:   "apps.gitctl.com",
 		Kind:    "application",
 		Version: "v1",
 	}
