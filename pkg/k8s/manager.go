@@ -19,6 +19,7 @@ type ClusterManager interface {
 type Resource interface {
 	Get(name string, object runtime.Object) error
 	Put(name string, object runtime.Object) error
+	UpdateStatus(name string, object runtime.Object, opts metav1.UpdateOptions) error
 	Delete(name string) error
 	Create(object runtime.Object) error
 	List(object runtime.Object, opts metav1.ListOptions) error

@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"strings"
 	"time"
@@ -52,6 +53,10 @@ func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.In
 func (resource *resourceVerber) Namespace(namespace string) *resourceVerber {
 	resource.namespace = namespace
 	return resource
+}
+
+func (resource *resourceVerber) Client() rest.Interface {
+	return resource.client
 }
 
 func (resource *resourceVerber) Delete(name string) error {
@@ -162,4 +167,18 @@ func (resource *resourceVerber) List(object runtime.Object, opts metav1.ListOpti
 	}
 	err = req.Do(context.TODO()).Into(object)
 	return err
+}
+
+func (resource *resourceVerber) UpdateStatus(name string, object runtime.Object, opts metav1.UpdateOptions) (err error) {
+	req := resource.client.Put().
+		Resource("clusters").
+		Name(name).
+		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec)
+
+	if len(resource.namespace) > 0 {
+		req = req.Namespace(resource.namespace)
+	}
+	err = req.Do(context.TODO()).Into(object)
+	return
 }
