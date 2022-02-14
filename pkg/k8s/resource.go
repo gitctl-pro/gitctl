@@ -18,7 +18,7 @@ import (
 var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 
-type resourceVerber struct {
+type resource struct {
 	schema.GroupVersionKind
 	client         rest.Interface
 	clusterManager ClusterManager
@@ -26,11 +26,11 @@ type resourceVerber struct {
 	resource       string
 }
 
-func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resourceVerber {
-	client, resource, _ := KindForResource(config, gvk)
-	return &resourceVerber{
+func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resource {
+	client, resourceName, _ := KindForResource(config, gvk)
+	return &resource{
 		client:   client,
-		resource: resource,
+		resource: resourceName,
 	}
 }
 
@@ -50,16 +50,16 @@ func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.In
 	return client, plural, err
 }
 
-func (resource *resourceVerber) Namespace(namespace string) *resourceVerber {
+func (resource *resource) Namespace(namespace string) *resource {
 	resource.namespace = namespace
 	return resource
 }
 
-func (resource *resourceVerber) Client() rest.Interface {
+func (resource *resource) Client() rest.Interface {
 	return resource.client
 }
 
-func (resource *resourceVerber) Delete(name string) error {
+func (resource *resource) Delete(name string) error {
 	defaultPropagationPolicy := metav1.DeletePropagationForeground
 	defaultDeleteOptions := &metav1.DeleteOptions{
 		PropagationPolicy: &defaultPropagationPolicy,
@@ -77,7 +77,7 @@ func (resource *resourceVerber) Delete(name string) error {
 	return req.Do(context.TODO()).Error()
 }
 
-func (resource *resourceVerber) Put(name string, object runtime.Object) (err error) {
+func (resource *resource) Put(name string, object runtime.Object) (err error) {
 	req := resource.client.Put().
 		Resource(resource.resource).
 		Name(name).
@@ -91,7 +91,7 @@ func (resource *resourceVerber) Put(name string, object runtime.Object) (err err
 	return
 }
 
-func (resource *resourceVerber) Get(name string, object runtime.Object) (err error) {
+func (resource *resource) Get(name string, object runtime.Object) (err error) {
 	req := resource.client.Get().
 		Resource(resource.resource).
 		Name(name).
@@ -104,7 +104,7 @@ func (resource *resourceVerber) Get(name string, object runtime.Object) (err err
 	return err
 }
 
-func (resource *resourceVerber) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (err error) {
+func (resource *resource) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (err error) {
 	req := resource.client.Patch(pt).
 		Resource(resource.resource).
 		Name(name).
@@ -120,7 +120,7 @@ func (resource *resourceVerber) Patch(name string, pt types.PatchType, data []by
 	return err
 }
 
-func (resource *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+func (resource *resource) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -138,7 +138,7 @@ func (resource *resourceVerber) Watch(ctx context.Context, opts metav1.ListOptio
 
 }
 
-func (resource *resourceVerber) Create(object runtime.Object) (err error) {
+func (resource *resource) Create(object runtime.Object) (err error) {
 	req := resource.client.Post().
 		Resource(resource.resource).
 		SetHeader("Accept", "application/json").
@@ -151,7 +151,7 @@ func (resource *resourceVerber) Create(object runtime.Object) (err error) {
 	return err
 }
 
-func (resource *resourceVerber) List(object runtime.Object, opts metav1.ListOptions) (err error) {
+func (resource *resource) List(object runtime.Object, opts metav1.ListOptions) (err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -169,7 +169,7 @@ func (resource *resourceVerber) List(object runtime.Object, opts metav1.ListOpti
 	return err
 }
 
-func (resource *resourceVerber) UpdateStatus(name string, object runtime.Object, opts metav1.UpdateOptions) (err error) {
+func (resource *resource) UpdateStatus(name string, object runtime.Object, opts metav1.UpdateOptions) (err error) {
 	req := resource.client.Put().
 		Resource("clusters").
 		Name(name).

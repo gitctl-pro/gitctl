@@ -1,8 +1,11 @@
 package k8s
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"context"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	"reflect"
 	"sync"
@@ -11,7 +14,32 @@ import (
 
 type SharedInformerOption func(*sharedInformerFactory) *sharedInformerFactory
 
-type NewInformerFunc func(time.Duration) cache.SharedIndexInformer
+type NewInformerFunc func(*ResourceObject) cache.SharedIndexInformer
+
+type ResourceObject struct {
+	Resource     Resource
+	Object       runtime.Object
+	ResyncPeriod time.Duration
+}
+
+func DefaultInformer(ro *ResourceObject) cache.SharedIndexInformer {
+	indexers := cache.Indexers{}
+	return cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				obj := &runtime.Unknown{}
+				err := ro.Resource.List(obj, options)
+				return obj, err
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return ro.Resource.Watch(context.TODO(), options)
+			},
+		},
+		ro.Object,
+		ro.ResyncPeriod,
+		indexers,
+	)
+}
 
 // SharedInformerFactory a small interface to allow for adding an informer without an import cycle
 type SharedInformerFactory interface {
@@ -32,7 +60,7 @@ type sharedInformerFactory struct {
 	startedInformers map[reflect.Type]bool
 }
 
-func WithCustomResyncConfig(resyncConfig map[v1.Object]time.Duration) SharedInformerOption {
+func WithCustomResyncConfig(resyncConfig map[metav1.Object]time.Duration) SharedInformerOption {
 	return func(factory *sharedInformerFactory) *sharedInformerFactory {
 		for k, v := range resyncConfig {
 			factory.customResync[reflect.TypeOf(k)] = v
@@ -113,7 +141,11 @@ func (f *sharedInformerFactory) InformerFor(obj runtime.Object, newFunc NewInfor
 		resyncPeriod = f.defaultResync
 	}
 
-	informer = newFunc(resyncPeriod)
+	informer = newFunc(&ResourceObject{
+		Resource:     f.resource,
+		Object:       obj,
+		ResyncPeriod: resyncPeriod,
+	})
 	f.informers[informerType] = informer
 
 	return informer
