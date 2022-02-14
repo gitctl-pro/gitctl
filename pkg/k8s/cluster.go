@@ -15,7 +15,7 @@ var (
 
 type clusterManager struct {
 	clusters map[string]*rest.Config
-	resource *resourceVerber
+	resource Resource
 	lock     sync.Mutex
 }
 

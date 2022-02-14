@@ -4,7 +4,7 @@ import "github.com/gin-gonic/gin"
 
 type repo struct{}
 
-func NewRepo() Repo {
+func NewRepo() *repo {
 	return &repo{}
 }
 
