@@ -24,8 +24,7 @@ func NewPodWatcher(config *rest.Config) *PodWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
 	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Pods")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind:    "pod",
-		Version: "v1",
+		Kind: "pod", Version: "v1",
 	})
 
 	w := &PodWatcher{
@@ -33,10 +32,7 @@ func NewPodWatcher(config *rest.Config) *PodWatcher {
 		workqueue: queue,
 		resource:  resource,
 	}
-
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&v1.Pod{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Pod{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},

@@ -24,9 +24,7 @@ func NewClusterWatcher(config *rest.Config) *ClusterWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
 	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Cluster")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind:    "Cluster",
-		Group:   "core.gitctl.com",
-		Version: "v1",
+		Kind: "Cluster", Group: "core.gitctl.com", Version: "v1",
 	})
 
 	w := &ClusterWatcher{
@@ -35,9 +33,7 @@ func NewClusterWatcher(config *rest.Config) *ClusterWatcher {
 		resource:  resource,
 	}
 
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&v1.Cluster{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Cluster{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},

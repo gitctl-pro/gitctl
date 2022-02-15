@@ -22,10 +22,9 @@ type EventWatcher struct {
 
 func NewEventWatcher(config *rest.Config) *EventWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Pods")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Event")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind:    "Event",
-		Version: "v1",
+		Kind: "Event", Version: "v1",
 	})
 
 	w := &EventWatcher{
@@ -34,9 +33,7 @@ func NewEventWatcher(config *rest.Config) *EventWatcher {
 		resource:  resource,
 	}
 
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&v1.Event{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Event{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},

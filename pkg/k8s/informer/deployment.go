@@ -3,7 +3,7 @@ package informer
 import (
 	"fmt"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
-	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/rest"
@@ -22,22 +22,16 @@ type DeploymentWatcher struct {
 
 func NewDeploymentWatcher(config *rest.Config) *DeploymentWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Deployments")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Deployment")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind:    "Deployment",
-		Group:   "apps/v1",
-		Version: "v1",
+		Kind: "Deployment", Group: "apps/v1", Version: "v1",
 	})
-
 	w := &DeploymentWatcher{
 		StopCh:    make(chan struct{}),
 		workqueue: queue,
 		resource:  resource,
 	}
-
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&appsv1.Deployment{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Deployment{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},

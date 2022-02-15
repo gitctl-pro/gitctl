@@ -22,21 +22,17 @@ type NodeWatcher struct {
 
 func NewNodeWatcher(config *rest.Config) *NodeWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Nodes")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Node")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind:    "node",
-		Version: "v1",
+		Kind: "node", Version: "v1",
 	})
-
 	w := &NodeWatcher{
 		StopCh:    make(chan struct{}),
 		workqueue: queue,
 		resource:  resource,
 	}
 
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&v1.Node{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Node{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},

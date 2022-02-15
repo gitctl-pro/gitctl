@@ -35,9 +35,7 @@ func NewApplicationWatcher(config *rest.Config) *ApplicationWatcher {
 		resource:  resource,
 	}
 
-	informerFactory := k8s.NewSharedInformerFactory(resource, 0)
-	informer := informerFactory.InformerFor(&v1.Application{}, k8s.DefaultInformer)
-
+	informer := k8s.DefaultInformer(resource, &v1.Application{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 		},
