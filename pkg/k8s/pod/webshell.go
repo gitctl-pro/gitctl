@@ -32,14 +32,12 @@ type StreamHandler struct {
 	height     uint16
 }
 
-func BindStreamHandler(cfg *rest.Config, namespace, name, container, command string) {
+func NewStreamHandler(cfg *rest.Config, namespace, name, container, command string) error {
 	handler := &StreamHandler{
 		ResizeChan: make(chan remotecommand.TerminalSize),
 	}
 	err := NewPodResource(cfg).Namespace(namespace).RemoteCommand(name, container, command, handler)
-	if err != nil {
-
-	}
+	return err
 }
 
 func (handler *StreamHandler) Write(p []byte) (size int, err error) {
