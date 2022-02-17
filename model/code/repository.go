@@ -41,11 +41,11 @@ func ListRepository(query *RepoPageOption) (apps []*Repository, total int64) {
 	}
 
 	if len(query.Namespace) > 0 {
-		tx = tx.Where("namespace = ? ", query.Namespace)
+		tx = tx.Where("namespace = ?", query.Namespace)
 	}
 
 	if len(query.Name) > 0 {
-		tx = tx.Where("name = ? ", query.Name)
+		tx = tx.Where("name = ?", query.Name)
 	}
 
 	if query.Limit == 0 {
@@ -61,10 +61,10 @@ func ListRepository(query *RepoPageOption) (apps []*Repository, total int64) {
 func GetRepository(query *RepoPageOption) (app *Repository, err error) {
 	tx := model.Db.Table("code_repository")
 	if len(query.Name) > 0 {
-		tx = tx.Where("name = ? ", query.Name)
+		tx = tx.Where("name = ?", query.Name)
 	}
 	if query.Id > 0 {
-		tx = tx.Where("id = ? ", query.Id)
+		tx = tx.Where("id = ?", query.Id)
 	}
 	result := tx.Limit(1).Find(&app)
 
