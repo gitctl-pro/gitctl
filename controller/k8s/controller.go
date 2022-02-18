@@ -96,8 +96,8 @@ func (c *K8sController) Apply(ctx *gin.Context) {
 	if len(namespace) > 0 {
 		resource.Namespace(namespace)
 	}
-	err2 := resource.Get(data.GetName(), &runtime.Unknown{})
-	if err2 != nil {
+	err = resource.Get(data.GetName(), &runtime.Unknown{})
+	if err != nil {
 		err = resource.Create(&runtime.Unknown{Raw: body, ContentType: contentType})
 	} else {
 		err = resource.Put(data.GetName(), &runtime.Unknown{Raw: body, ContentType: contentType})

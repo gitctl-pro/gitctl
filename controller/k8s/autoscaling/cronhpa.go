@@ -4,32 +4,33 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
-	"k8s.io/api/autoscaling/v2beta2"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"net/http"
 )
 
-type hpa struct {
+type cronhpa struct {
 	clusterManager k8s.ClusterManager
 	gvk            *schema.GroupVersionKind
 }
 
-func NewHPA(clusterManager k8s.ClusterManager) *hpa {
+func NewCronHPA(clusterManager k8s.ClusterManager) *hpa {
+	//todo ? group
 	gvk := &schema.GroupVersionKind{
-		Group:   "autoscaling",
-		Kind:    "horizontalpodautoscaler",
-		Version: "v2",
+		Group:   "/autoscaling",
+		Kind:    "cronhorizontalpodautoscaler",
+		Version: "v1",
 	}
 	return &hpa{clusterManager: clusterManager, gvk: gvk}
 }
 
-func (ctl *hpa) Get(ctx *gin.Context) {
+func (ctl *cronhpa) Get(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	name := ctx.Param("name")
 	namespace := ctx.Param("namespace")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
-	obj := &v2beta2.HorizontalPodAutoscaler{}
+	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
 		Get(name, obj)
@@ -41,13 +42,13 @@ func (ctl *hpa) Get(ctx *gin.Context) {
 	return
 }
 
-func (ctl *hpa) ListHPA(ctx *gin.Context) {
+func (ctl *cronhpa) ListHPA(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	name := ctx.Param("name")
 	namespace := ctx.Param("namespace")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
-	obj := &v2beta2.HorizontalPodAutoscaler{}
+	obj := &runtime.Unknown{}
 	err := k8s.NewResource(cfg, ctl.gvk).
 		Namespace(namespace).
 		Put(name, obj)
@@ -59,29 +60,25 @@ func (ctl *hpa) ListHPA(ctx *gin.Context) {
 	return
 }
 
-func (ctl *hpa) Put(ctx *gin.Context) {
+func (ctl *cronhpa) Put(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	name := ctx.Param("name")
 	namespace := ctx.Param("namespace")
 
 	cfg, _ := ctl.clusterManager.Get(cluster)
-	put := &v2beta2.HorizontalPodAutoscaler{}
-	ctx.BindJSON(put)
-
-	meta := &k8s.Metadata{
-		Labels:      put.Labels,
-		Annotations: put.Annotations,
-	}
-	err := k8s.NewResource(cfg, ctl.gvk).Namespace(namespace).MergePatch(name, meta, put.Spec)
+	obj := &runtime.Unknown{}
+	err := k8s.NewResource(cfg, ctl.gvk).
+		Namespace(namespace).
+		Put(name, obj)
 
 	ctx.JSON(200, &controller.Response{
 		Err:  err,
-		Data: nil,
+		Data: obj,
 	})
 	return
 }
 
-func (ctl *hpa) Delete(ctx *gin.Context) {
+func (ctl *cronhpa) Delete(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	name := ctx.Param("name")
 	namespace := ctx.Param("namespace")
@@ -97,11 +94,11 @@ func (ctl *hpa) Delete(ctx *gin.Context) {
 	return
 }
 
-func (ctl *hpa) Create(ctx *gin.Context) {
+func (ctl *cronhpa) Create(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
 
-	obj := &v2beta2.HorizontalPodAutoscaler{}
+	obj := &runtime.Unknown{}
 	ctx.BindJSON(obj)
 
 	cfg, _ := ctl.clusterManager.Get(cluster)

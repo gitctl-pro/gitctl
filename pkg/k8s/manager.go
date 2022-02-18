@@ -26,4 +26,5 @@ type Resource interface {
 	List(object runtime.Object, opts metav1.ListOptions) error
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) error
+	MergePatch(name string, metadata *Metadata, spec interface{}) error
 }
