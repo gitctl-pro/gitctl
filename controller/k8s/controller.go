@@ -10,11 +10,18 @@ import (
 	"github.com/gitctl-pro/gitctl/controller/k8s/networking"
 	"github.com/gitctl-pro/gitctl/controller/k8s/rabc"
 	"github.com/gitctl-pro/gitctl/controller/k8s/storage"
+	"github.com/gitctl-pro/gitctl/pkg/controller"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
+	"io/ioutil"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/rest"
+	"strings"
 )
 
-type K8s struct {
+type K8sController struct {
+	clusterManager k8s.ClusterManager
 	Deployment     DeploymentInterface
 	StatefulSet    StatefulSetInterface
 	DaemonSet      DaemonsetInterface
@@ -42,8 +49,8 @@ type K8s struct {
 	StorageClass   StorageClassInterface
 }
 
-func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
-	return &K8s{
+func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8sController {
+	return &K8sController{
 		Deployment:     apps.NewDeployment(clusterManager),
 		ReplicaSet:     apps.NewReplicaset(clusterManager),
 		DaemonSet:      apps.NewDaemonset(clusterManager),
@@ -71,218 +78,39 @@ func NewController(cfg *rest.Config, clusterManager k8s.ClusterManager) *K8s {
 	}
 }
 
-type DeploymentInterface interface {
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	List(ctx *gin.Context)
-	Patch(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	ReplicaSets(ctx *gin.Context)
-	NewReplicaSets(ctx *gin.Context)
-	OldReplicaSets(ctx *gin.Context)
-	RolloutRestart(ctx *gin.Context)
-	RolloutPause(ctx *gin.Context)
-	RolloutResume(ctx *gin.Context)
-	RolloutRollback(ctx *gin.Context)
+func (c *K8sController) Apply(ctx *gin.Context) {
+	cluster := ctx.Query("cluster")
+	namespace := ctx.Query("namespace")
+	cfg, err := c.clusterManager.Get(cluster)
+	contentType := ctx.ContentType()
+
+	body, _ := ioutil.ReadAll(ctx.Request.Body)
+	reader := strings.NewReader(string(body))
+	d := yaml.NewYAMLOrJSONDecoder(reader, 4096)
+	data := &unstructured.Unstructured{}
+	if err := d.Decode(data); err != nil {
+	}
+
+	gvk := data.GroupVersionKind()
+	resource := k8s.NewResource(cfg, &gvk)
+	if len(namespace) > 0 {
+		resource.Namespace(namespace)
+	}
+	err2 := resource.Get(data.GetName(), &runtime.Unknown{})
+	if err2 != nil {
+		err = resource.Create(&runtime.Unknown{Raw: body, ContentType: contentType})
+	} else {
+		err = resource.Put(data.GetName(), &runtime.Unknown{Raw: body, ContentType: contentType})
+	}
+
+	ctx.JSON(200, &controller.Response{
+		Err:  err,
+		Msg:  "",
+		Data: nil,
+	})
+	return
 }
 
-type PodInterface interface {
-	ListPod(ctx *gin.Context)
-	Containers(ctx *gin.Context)
-	GetLogs(ctx *gin.Context)
-	Eviction(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	PersistentVolumeClaims(ctx *gin.Context)
-	ExecShell(ctx *gin.Context)
-	ExecShellInfo(ctx *gin.Context)
-}
+func (c *K8sController) Patch(ctx *gin.Context) {
 
-type NamespaceInterface interface {
-	List(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	Quota(ctx *gin.Context)
-	LimitRange(ctx *gin.Context)
-}
-
-type StatefulSetInterface interface {
-	ListStatefulSet(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	Pods(ctx *gin.Context)
-	Service(ctx *gin.Context)
-}
-
-type ReplicasetInterface interface {
-	List(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	Pods(ctx *gin.Context)
-	Service(ctx *gin.Context)
-}
-
-type NodeInterface interface {
-	ListNode(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type ConfigmapInterface interface {
-	ListConfigmap(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type DaemonsetInterface interface {
-	ListDaemonset(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	Pods(ctx *gin.Context)
-}
-
-type ServiceInterface interface {
-	ListService(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-	Pods(ctx *gin.Context)
-}
-
-type IngressInterface interface {
-	ListIngress(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-}
-
-type JobInterface interface {
-	ListJob(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-}
-
-type CronjobInterface interface {
-	ListCronjob(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Events(ctx *gin.Context)
-}
-
-type SecretInterface interface {
-	ListSecret(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type HPAInterface interface {
-	ListHPA(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type PVCInterface interface {
-	ListPVC(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type PVInterface interface {
-	ListPV(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type EventInterface interface {
-	ListEvents(ctx *gin.Context)
-}
-
-type ScaleInterface interface {
-	ScaleResource(ctx *gin.Context)
-}
-
-type ServiceAccountInterface interface {
-	ListServiceAccount(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type ClusterRoleInterface interface {
-	ListClusterRole(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type RoleInterface interface {
-	ListRole(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type CrdInterface interface {
-	ListCrd(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type StorageClassInterface interface {
-	ListStorageClass(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type NetworkPolicyInterface interface {
-	ListNetworkPolicy(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
-}
-
-type IngressClassInterface interface {
-	ListIngressClass(ctx *gin.Context)
-	Get(ctx *gin.Context)
-	Put(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-	Create(ctx *gin.Context)
 }
