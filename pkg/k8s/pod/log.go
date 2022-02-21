@@ -8,7 +8,8 @@ import (
 
 func GetLogDetails(cfg *rest.Config, namespace string, name string, container string, logSelector *logs.Selection, usePreviousLogs bool) (*logs.LogDetails, error) {
 	podResource := NewPodResource(cfg)
-	pod, err := podResource.Namespace(namespace).Get(name)
+	pod, err := podResource.Namespace(namespace).Name(name).GetPod()
+
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +21,7 @@ func GetLogDetails(cfg *rest.Config, namespace string, name string, container st
 	if logSelector.LogFilePosition == logs.End {
 		fromBegin = false
 	}
-	readCloser, err := podResource.LogStream(name, container, fromBegin, usePreviousLogs)
+	readCloser, err := podResource.LogStream(container, fromBegin, usePreviousLogs)
 	if err != nil {
 		return nil, err
 	}

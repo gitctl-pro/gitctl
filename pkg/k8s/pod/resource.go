@@ -1,6 +1,7 @@
 package pod
 
 import (
+	"bytes"
 	"context"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
+	"strings"
+	"time"
 )
 
 var lineReadLimit int64 = 5000
@@ -26,6 +29,7 @@ type PodResource struct {
 	client    rest.Interface
 	config    *rest.Config
 	namespace string
+	name      string
 }
 
 func NewPodResource(cfg *rest.Config) *PodResource {
@@ -46,10 +50,15 @@ func (s *PodResource) Namespace(namespace string) *PodResource {
 	return s
 }
 
-func (s *PodResource) LogStream(name string, container string, fromBegin bool, previous bool) (io.ReadCloser, error) {
+func (s *PodResource) Name(name string) *PodResource {
+	s.name = name
+	return s
+}
+
+func (s *PodResource) LogStream(container string, fromBegin bool, previous bool) (io.ReadCloser, error) {
 	req := s.client.Get().
 		Namespace(s.namespace).
-		Name(name).
+		Name(s.name).
 		Resource("pods").
 		SubResource("log")
 
@@ -69,10 +78,10 @@ func (s *PodResource) LogStream(name string, container string, fromBegin bool, p
 	return req.Stream(context.TODO())
 }
 
-func (s *PodResource) RemoteCommand(name string, container string, command string, handler PtyHandler) error {
+func (s *PodResource) TtyStream(container string, command string, handler PtyHandler) error {
 	req := s.client.Post().
 		Namespace(s.namespace).
-		Name(name).
+		Name(s.name).
 		Resource("pods").
 		SubResource("exec")
 
@@ -96,8 +105,36 @@ func (s *PodResource) RemoteCommand(name string, container string, command strin
 	return err
 }
 
-func (s *PodResource) Get(name string) (*v1.Pod, error) {
+func (s *PodResource) ExecStream(container string, command string, timeout time.Duration, stdin io.Reader) (bytes.Buffer, bytes.Buffer, error) {
+	req := s.client.Post().
+		Namespace(s.namespace).
+		Name(s.name).
+		Resource("pods").
+		Timeout(timeout).
+		SubResource("exec")
+
+	commands := strings.Split(strings.TrimSpace(command), " ")
+	req.VersionedParams(&v1.PodExecOptions{
+		Container: container,
+		Command:   commands,
+		Stdin:     false,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       true,
+	}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(s.config, "POST", req.URL())
+	var stdout, stderr bytes.Buffer
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  stdin,
+		Stdout: &stdout,
+		Stderr: &stderr,
+	})
+	return stdout, stderr, err
+}
+
+func (s *PodResource) GetPod() (*v1.Pod, error) {
 	pod := &v1.Pod{}
-	err := s.resource.Namespace(s.namespace).Get(name, pod)
+	err := s.resource.Namespace(s.namespace).Get(s.name, pod)
 	return pod, err
 }
