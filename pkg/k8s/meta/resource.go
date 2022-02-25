@@ -24,6 +24,11 @@ func NewMetaResource(cfg *rest.Config, gvk *schema.GroupVersionKind) *MetaResour
 	}
 }
 
+func (r *MetaResource) Namespace(namespace string) *MetaResource {
+	r.resource.Namespace(namespace)
+	return r
+}
+
 func (r *MetaResource) AddLabel(name string, label, value string) (err error) {
 	patchObject := []k8s.PatchPathValue{{
 		Op:    "add",
@@ -60,11 +65,11 @@ func (r *MetaResource) RemoveAnnotations(name string, annotation, value string) 
 	return r.resource.PatchPath(name, patchObject)
 }
 
-func (r *MetaResource) Replace(name string, labels map[string]string, annotations map[string]string) (err error) {
+func (r *MetaResource) Replace(name string, meta *Metadata) (err error) {
 	return r.resource.MergePatch(name, &k8s.MergePatchObject{
 		Metadata: &k8s.Metadata{
-			Labels:      labels,
-			Annotations: annotations,
+			Labels:      meta.Labels,
+			Annotations: meta.Annotations,
 		},
 	})
 }
