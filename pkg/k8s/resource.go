@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gobuffalo/flect"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,16 +24,6 @@ type resource struct {
 	clusterManager ClusterManager
 	namespace      string
 	resource       string
-}
-
-type Metadata struct {
-	Labels      map[string]string `json:"labels"`
-	Annotations map[string]string `json:"annotations"`
-}
-
-type mergePatchObject struct {
-	Metadata *Metadata   `json:"metadata"`
-	Spec     interface{} `json:"spec"`
 }
 
 func NewResource(config *rest.Config, gvk *schema.GroupVersionKind) *resource {
@@ -129,15 +118,6 @@ func (resource *resource) Patch(name string, pt types.PatchType, data []byte, su
 
 	err = req.Do(context.TODO()).Error()
 	return err
-}
-
-func (resource *resource) MergePatch(name string, metadata *Metadata, spec interface{}) (err error) {
-	patch := mergePatchObject{
-		Metadata: metadata,
-		Spec:     spec,
-	}
-	patchData, _ := json.Marshal(patch)
-	return resource.Patch(name, types.MergePatchType, patchData)
 }
 
 func (resource *resource) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
