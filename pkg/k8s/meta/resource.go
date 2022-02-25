@@ -38,11 +38,11 @@ func (r *MetaResource) AddLabel(name string, label, value string) (err error) {
 	return r.resource.PatchPath(name, patchObject)
 }
 
-func (r *MetaResource) RemoveLabel(name string, label, value string) (err error) {
+func (r *MetaResource) RemoveLabel(name string, label) (err error) {
 	patchObject := []k8s.PatchPathValue{{
-		Op:    "add",
+		Op:    "remove",
 		Path:  "/metadata/labels/" + label,
-		Value: value,
+		Value: "",
 	}}
 	return r.resource.PatchPath(name, patchObject)
 }
@@ -56,11 +56,11 @@ func (r *MetaResource) AddAnnotations(name string, annotation, value string) (er
 	return r.resource.PatchPath(name, patchObject)
 }
 
-func (r *MetaResource) RemoveAnnotations(name string, annotation, value string) (err error) {
+func (r *MetaResource) RemoveAnnotations(name string, annotation) (err error) {
 	patchObject := []k8s.PatchPathValue{{
-		Op:    "add",
+		Op:    "remove",
 		Path:  "/metadata/annotations/" + annotation,
-		Value: value,
+		Value: "",
 	}}
 	return r.resource.PatchPath(name, patchObject)
 }
