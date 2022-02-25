@@ -45,6 +45,6 @@ type MetaResource interface {
 	Replace(name string, metadata *Metadata) (err error)
 	AddLabel(name string, label, value string) (err error)
 	RemoveLabel(name string, label string) (err error)
-	AddAnnotation(name string, label, value string) (err error)
-	RemoveAnnotation(name string, label string) (err error)
+	AddAnnotation(name string, ann, value string) (err error)
+	RemoveAnnotation(name string, ann string) (err error)
 }
