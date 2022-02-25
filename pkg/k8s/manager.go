@@ -16,6 +16,11 @@ type ClusterManager interface {
 	Delete(name string) error
 }
 
+type Metadata struct {
+	Labels      map[string]string `json:"labels"`
+	Annotations map[string]string `json:"annotations"`
+}
+
 type Resource interface {
 	Namespace(namespace string) *resource
 	Get(name string, object runtime.Object) error
@@ -28,4 +33,18 @@ type Resource interface {
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) error
 	MergePatch(name string, patchObject *MergePatchObject) (err error)
 	PatchPath(name string, patchObject []PatchPathValue) (err error)
+}
+
+type ScaleResource interface {
+	Namespace(namespace string) ScaleResource
+	ScaleRelicas(name string, replicas int) (err error)
+}
+
+type MetaResource interface {
+	Namespace(namespace string) MetaResource
+	Replace(name string, metadata *Metadata) (err error)
+	AddLabel(name string, label, value string) (err error)
+	RemoveLabel(name string, label string) (err error)
+	AddAnnotation(name string, label, value string) (err error)
+	RemoveAnnotation(name string, label string) (err error)
 }

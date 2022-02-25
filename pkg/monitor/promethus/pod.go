@@ -13,6 +13,7 @@ var seriesKeys = []string{
 	"pod",
 	"pod_ip",
 	"node",
+	"create_by_kind",
 }
 
 var queryKeys = []string{

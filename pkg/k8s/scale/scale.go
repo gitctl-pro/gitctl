@@ -13,12 +13,17 @@ type scaleResource struct {
 	client   rest.Interface
 }
 
-func NewScaleResource(cfg *rest.Config, gvk *schema.GroupVersionKind) *scaleResource {
+func NewScaleResource(cfg *rest.Config, gvk *schema.GroupVersionKind) k8s.ScaleResource {
 	resource := k8s.NewResource(cfg, gvk)
 	return &scaleResource{
 		client:   resource.Client(),
 		resource: resource,
 	}
+}
+
+func (r *scaleResource) Namespace(namespace string) k8s.ScaleResource {
+	r.resource.Namespace(namespace)
+	return r
 }
 
 func (r *scaleResource) ScaleRelicas(name string, replicas int) (err error) {

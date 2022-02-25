@@ -78,7 +78,7 @@ func (s *PodResource) LogStream(container string, fromBegin bool, previous bool)
 	return req.Stream(context.TODO())
 }
 
-func (s *PodResource) TtyStream(container string, command string, handler PtyHandler) error {
+func (s *PodResource) PtyStream(container string, command string, handler PtyHandler) error {
 	req := s.client.Post().
 		Namespace(s.namespace).
 		Name(s.name).

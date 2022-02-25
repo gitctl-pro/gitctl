@@ -11,11 +11,6 @@ type ResourcePatch struct {
 	client   rest.Interface
 }
 
-type Metadata struct {
-	Labels      map[string]string `json:"labels"`
-	Annotations map[string]string `json:"annotations"`
-}
-
 type MergePatchObject struct {
 	Metadata *Metadata   `json:"metadata"`
 	Spec     interface{} `json:"spec"`

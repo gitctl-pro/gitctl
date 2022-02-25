@@ -38,7 +38,7 @@ func NewStreamHandler(cfg *rest.Config, namespace, name, container, command stri
 	}
 	err := NewPodResource(cfg).
 		Namespace(namespace).
-		Name(name).TtyStream(container, command, handler)
+		Name(name).PtyStream(container, command, handler)
 	return err
 }
 
