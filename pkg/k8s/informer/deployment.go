@@ -13,23 +13,23 @@ import (
 )
 
 type DeploymentWatcher struct {
-	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
-	informer  cache.Controller
-	StopCh    chan struct{}
-	resource  k8s.Resource
+	client     rest.Interface
+	Resource   k8s.Resource
+	Workqueue  workqueue.RateLimitingInterface
+	controller cache.Controller
+	stopCh     chan struct{}
 }
 
 func NewDeploymentWatcher(config *rest.Config) *DeploymentWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
 	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Deployment")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
-		Kind: "Deployment", Group: "apps/v1", Version: "v1",
+		Kind: "Deployment", Group: "apps", Version: "v1",
 	})
 	w := &DeploymentWatcher{
-		StopCh:    make(chan struct{}),
-		workqueue: queue,
-		resource:  resource,
+		stopCh:    make(chan struct{}),
+		Workqueue: queue,
+		Resource:  resource,
 	}
 	informer := k8s.DefaultInformer(resource, &v1.Deployment{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -43,12 +43,12 @@ func NewDeploymentWatcher(config *rest.Config) *DeploymentWatcher {
 	return w
 }
 
-func (c *DeploymentWatcher) Run(stopCh chan struct{}) {
+func (w *DeploymentWatcher) Run() {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go w.controller.Run(w.stopCh)
+	if !cache.WaitForCacheSync(w.stopCh, w.controller.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}
-	<-stopCh
+	<-w.stopCh
 }

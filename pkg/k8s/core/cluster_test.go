@@ -1,4 +1,4 @@
-package k8s
+package core
 
 import (
 	v1 "github.com/gitctl-pro/apps/apis/core/v1"

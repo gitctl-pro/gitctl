@@ -14,6 +14,11 @@ type ClusterManager interface {
 	Get(name string) (*rest.Config, error)
 	Create(cluster *v1.Cluster) error
 	Delete(name string) error
+	Watcher(ctx context.Context)
+}
+
+type DeploymentManager interface {
+	Watcher(ctx context.Context)
 }
 
 type Metadata struct {

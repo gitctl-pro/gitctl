@@ -14,23 +14,23 @@ import (
 
 type EventWatcher struct {
 	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
-	informer  cache.Controller
-	StopCh    chan struct{}
-	resource  k8s.Resource
+	Resource  k8s.Resource
+	Workqueue workqueue.RateLimitingInterface
+	contoller cache.Controller
+	stopCh    chan struct{}
 }
 
 func NewEventWatcher(config *rest.Config) *EventWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Event")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "event")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
 		Kind: "Event", Version: "v1",
 	})
 
 	w := &EventWatcher{
-		StopCh:    make(chan struct{}),
-		workqueue: queue,
-		resource:  resource,
+		stopCh:    make(chan struct{}),
+		Workqueue: queue,
+		Resource:  resource,
 	}
 
 	informer := k8s.DefaultInformer(resource, &v1.Event{}, 0)
@@ -45,10 +45,10 @@ func NewEventWatcher(config *rest.Config) *EventWatcher {
 	return w
 }
 
-func (c *EventWatcher) Run(stopCh chan struct{}) {
+func (w *EventWatcher) Run(stopCh chan struct{}) {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go w.contoller.Run(stopCh)
+	if !cache.WaitForCacheSync(stopCh, w.contoller.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}

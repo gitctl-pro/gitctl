@@ -13,23 +13,23 @@ import (
 )
 
 type NodeWatcher struct {
-	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
-	informer  cache.Controller
-	StopCh    chan struct{}
-	resource  k8s.Resource
+	client     rest.Interface
+	Resource   k8s.Resource
+	Workqueue  workqueue.RateLimitingInterface
+	controller cache.Controller
+	StopCh     chan struct{}
 }
 
 func NewNodeWatcher(config *rest.Config) *NodeWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Node")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "node")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
 		Kind: "node", Version: "v1",
 	})
 	w := &NodeWatcher{
 		StopCh:    make(chan struct{}),
-		workqueue: queue,
-		resource:  resource,
+		Workqueue: queue,
+		Resource:  resource,
 	}
 
 	informer := k8s.DefaultInformer(resource, &v1.Node{}, 0)
@@ -46,8 +46,8 @@ func NewNodeWatcher(config *rest.Config) *NodeWatcher {
 
 func (c *NodeWatcher) Run(stopCh chan struct{}) {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go c.controller.Run(stopCh)
+	if !cache.WaitForCacheSync(stopCh, c.controller.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}

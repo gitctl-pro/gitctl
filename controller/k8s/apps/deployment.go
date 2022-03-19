@@ -94,10 +94,6 @@ func (ctl *deployment) Delete(ctx *gin.Context) {
 	return
 }
 
-func (ctl *deployment) Patch(ctx *gin.Context) {
-	panic("implement me")
-}
-
 func (ctl *deployment) List(ctx *gin.Context) {
 	cluster := ctx.Param("cluster")
 	namespace := ctx.Param("namespace")
@@ -115,7 +111,15 @@ func (ctl *deployment) List(ctx *gin.Context) {
 	return
 }
 
+func (ctl *deployment) Pods(ctx *gin.Context) {
+	panic("implement me")
+}
+
 func (ctl *deployment) ReplicaSets(ctx *gin.Context) {
+	panic("implement me")
+}
+
+func (ctl *deployment) ScaleReplicas(ctx *gin.Context) {
 	panic("implement me")
 }
 

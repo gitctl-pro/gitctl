@@ -13,23 +13,23 @@ import (
 )
 
 type ReplicaSetWatcher struct {
-	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
-	informer  cache.Controller
-	StopCh    chan struct{}
-	resource  k8s.Resource
+	client     rest.Interface
+	Resource   k8s.Resource
+	Workqueue  workqueue.RateLimitingInterface
+	controller cache.Controller
+	stopCh     chan struct{}
 }
 
 func NewReplicaSetWatcher(config *rest.Config) *ReplicaSetWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "ReplicaSet")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "replicaSet")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
 		Kind: "ReplicaSet", Group: "apps/v1", Version: "v1",
 	})
 	w := &ReplicaSetWatcher{
-		StopCh:    make(chan struct{}),
-		workqueue: queue,
-		resource:  resource,
+		stopCh:    make(chan struct{}),
+		Workqueue: queue,
+		Resource:  resource,
 	}
 	informer := k8s.DefaultInformer(resource, &v1.ReplicaSet{}, 0)
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -43,12 +43,12 @@ func NewReplicaSetWatcher(config *rest.Config) *ReplicaSetWatcher {
 	return w
 }
 
-func (c *ReplicaSetWatcher) Run(stopCh chan struct{}) {
+func (w *ReplicaSetWatcher) Run() {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go w.controller.Run(w.stopCh)
+	if !cache.WaitForCacheSync(w.stopCh, w.controller.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}
-	<-stopCh
+	<-w.stopCh
 }

@@ -13,24 +13,24 @@ import (
 )
 
 type ClusterWatcher struct {
-	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
-	informer  cache.Controller
-	StopCh    chan struct{}
-	resource  k8s.Resource
+	client     rest.Interface
+	Workqueue  workqueue.RateLimitingInterface
+	Resource   k8s.Resource
+	controller cache.Controller
+	stopCh     chan struct{}
 }
 
 func NewClusterWatcher(config *rest.Config) *ClusterWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Cluster")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "cluster")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
 		Kind: "Cluster", Group: "core.gitctl.com", Version: "v1",
 	})
 
 	w := &ClusterWatcher{
-		StopCh:    make(chan struct{}),
-		workqueue: queue,
-		resource:  resource,
+		stopCh:    make(chan struct{}),
+		Workqueue: queue,
+		Resource:  resource,
 	}
 
 	informer := k8s.DefaultInformer(resource, &v1.Cluster{}, 0)
@@ -45,12 +45,12 @@ func NewClusterWatcher(config *rest.Config) *ClusterWatcher {
 	return w
 }
 
-func (c *ClusterWatcher) Run(stopCh chan struct{}) {
+func (w *ClusterWatcher) Run() {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go w.controller.Run(w.stopCh)
+	if !cache.WaitForCacheSync(w.stopCh, w.controller.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}
-	<-stopCh
+	<-w.stopCh
 }

@@ -14,15 +14,15 @@ import (
 
 type ApplicationWatcher struct {
 	client    rest.Interface
-	workqueue workqueue.RateLimitingInterface
+	Workqueue workqueue.RateLimitingInterface
 	informer  cache.Controller
-	StopCh    chan struct{}
+	stopCh    chan struct{}
 	resource  k8s.Resource
 }
 
 func NewApplicationWatcher(config *rest.Config) *ApplicationWatcher {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
-	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "Application")
+	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, "application")
 	resource := k8s.NewResource(config, &schema.GroupVersionKind{
 		Kind:    "Application",
 		Group:   "core.gitctl.com",
@@ -30,8 +30,8 @@ func NewApplicationWatcher(config *rest.Config) *ApplicationWatcher {
 	})
 
 	w := &ApplicationWatcher{
-		StopCh:    make(chan struct{}),
-		workqueue: queue,
+		stopCh:    make(chan struct{}),
+		Workqueue: queue,
 		resource:  resource,
 	}
 
@@ -47,12 +47,12 @@ func NewApplicationWatcher(config *rest.Config) *ApplicationWatcher {
 	return w
 }
 
-func (c *ApplicationWatcher) Run(stopCh chan struct{}) {
+func (w *ApplicationWatcher) Run() {
 	defer runtime.HandleCrash()
-	go c.informer.Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
+	go w.informer.Run(w.stopCh)
+	if !cache.WaitForCacheSync(w.stopCh, w.informer.HasSynced) {
 		runtime.HandleError(fmt.Errorf("Time out waitng for caches to sync"))
 		return
 	}
-	<-stopCh
+	<-w.stopCh
 }

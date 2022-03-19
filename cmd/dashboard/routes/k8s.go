@@ -34,6 +34,7 @@ func (r *RouteManager) addK8sRoutes(path string) {
 		rg.GET("/:namespace/:name", k8s.Deployment.Get)
 		rg.PUT("/:namespace/:name", k8s.Deployment.Put)
 
+		rg.GET("/:namespace/:name/pods", k8s.Deployment.Pods)
 		rg.GET("/:namespace/:name/events", k8s.Deployment.Events)
 		rg.GET("/:namespace/:name/repliaces", k8s.Deployment.ReplicaSets)
 		rg.GET("/:namespace/:name/repliaces/new", k8s.Deployment.NewReplicaSets)
