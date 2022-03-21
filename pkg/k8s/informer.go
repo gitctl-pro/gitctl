@@ -18,10 +18,10 @@ type informer struct {
 	resource   Resource
 	workqueue  workqueue.RateLimitingInterface
 	controller cache.Controller
-	store      cache.Store
+	informer   cache.SharedIndexInformer
 }
 
-func NewInformer(resource Resource, object runtime.Object, resyncPeriod time.Duration) *informer {
+func NewInformer(resource Resource, object runtime.Object, resyncPeriod time.Duration) Informer {
 	rateLimit := workqueue.NewItemExponentialFailureRateLimiter(time.Millisecond, 10*time.Second)
 	queue := workqueue.NewNamedRateLimitingQueue(rateLimit, resource.Resource())
 
@@ -29,8 +29,8 @@ func NewInformer(resource Resource, object runtime.Object, resyncPeriod time.Dur
 		workqueue: queue,
 		resource:  resource,
 	}
-	sharedIndexInformer := w.newSharedIndexInformer(object, resyncPeriod)
-	sharedIndexInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	w.newSharedIndexInformer(object, resyncPeriod)
+	w.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			controller.Enqueue(obj, queue)
 		},
@@ -41,13 +41,12 @@ func NewInformer(resource Resource, object runtime.Object, resyncPeriod time.Dur
 			controller.Enqueue(obj, queue)
 		},
 	})
-	w.store = sharedIndexInformer.GetStore()
 	return w
 }
 
-func (w *informer) newSharedIndexInformer(object runtime.Object, resyncPeriod time.Duration) cache.SharedIndexInformer {
+func (w *informer) newSharedIndexInformer(object runtime.Object, resyncPeriod time.Duration) {
 	indexers := cache.Indexers{}
-	return cache.NewSharedIndexInformer(
+	w.informer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				obj := &runtime.Unknown{}
@@ -65,7 +64,7 @@ func (w *informer) newSharedIndexInformer(object runtime.Object, resyncPeriod ti
 }
 
 func (w *informer) Store() cache.Store {
-	return w.store
+	return w.informer.GetStore()
 }
 
 func (w *informer) Workqueue() workqueue.RateLimitingInterface {

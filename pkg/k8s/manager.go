@@ -71,3 +71,15 @@ type PodManager interface {
 type ReplicasetManager interface {
 	Watcher(ctx context.Context)
 }
+
+type PipelineManager interface {
+	Watcher(ctx context.Context)
+}
+
+type PipelineRunManager interface {
+	Watcher(ctx context.Context)
+}
+
+type TaskRunManager interface {
+	Watcher(ctx context.Context)
+}

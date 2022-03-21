@@ -74,10 +74,11 @@ func (m *clusterManager) Delete(name string) error {
 
 func (m *clusterManager) Watcher(ctx context.Context) {
 	log.Info("clusterManager watcher")
-	go m.informer.Run()
+	go m.informer.Run(ctx.Done())
 	go wait.Until(func() {
 		controller.RunWorker(m.informer.Workqueue(), m.resource.Resource(), m.handleWatcher)
 	}, time.Second, ctx.Done())
+	<-ctx.Done()
 }
 
 func (m *clusterManager) handleWatcher(key string) error {
