@@ -1,7 +1,7 @@
 package pod
 
 import (
-	"github.com/gitctl-pro/gitctl/pkg/k8s/logs"
+	"github.com/gitctl-pro/gitctl/pkg/k8s/pod/logs"
 	"io"
 	"k8s.io/client-go/rest"
 )

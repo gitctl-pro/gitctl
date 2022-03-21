@@ -40,10 +40,11 @@ func main() {
 	pflag.Parse()
 
 	config := setup.InitConfig()
-	go setup.SetupMysqlConn(config)
+	//go setup.SetupMysqlConn(config)
 	watcher, _ := setup.SetupK8sWacther(config, o.kubeConfig)
 	watcher.EnableDeploymentWatcher()
-	watcher.EnablePodWatcher()
-	watcher.EnableEventWatcher()
-	watcher.EnableReplicasetWatcher()
+	watcher.Run()
+	//	watcher.EnablePodWatcher()
+	//	watcher.EnableEventWatcher()
+	//	watcher.EnableReplicasetWatcher()
 }

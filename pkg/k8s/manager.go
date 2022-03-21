@@ -8,6 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
 
 type ClusterManager interface {
@@ -17,17 +19,15 @@ type ClusterManager interface {
 	Watcher(ctx context.Context)
 }
 
-type DeploymentManager interface {
-	Watcher(ctx context.Context)
-}
-
-type Metadata struct {
-	Labels      map[string]string `json:"labels"`
-	Annotations map[string]string `json:"annotations"`
+type Informer interface {
+	Run(stopCh <-chan struct{})
+	Store() cache.Store
+	Workqueue() workqueue.RateLimitingInterface
 }
 
 type Resource interface {
-	Namespace(namespace string) *resource
+	Resource() string
+	Namespace(namespace string) Resource
 	Get(name string, object runtime.Object) error
 	Put(name string, object runtime.Object) error
 	UpdateStatus(name string, object runtime.Object, opts metav1.UpdateOptions) error
@@ -52,4 +52,22 @@ type MetaResource interface {
 	RemoveLabel(name string, label string) (err error)
 	AddAnnotation(name string, ann, value string) (err error)
 	RemoveAnnotation(name string, ann string) (err error)
+}
+
+type DeploymentManager interface {
+	Namespace(namespace string) DeploymentManager
+	Scale(name string, replicas int) error
+	Watcher(ctx context.Context)
+}
+
+type EventManager interface {
+	Watcher(ctx context.Context)
+}
+
+type PodManager interface {
+	Watcher(ctx context.Context)
+}
+
+type ReplicasetManager interface {
+	Watcher(ctx context.Context)
 }

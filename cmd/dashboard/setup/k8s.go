@@ -4,6 +4,7 @@ import (
 	"github.com/gitctl-pro/gitctl/pkg/config"
 	"github.com/gitctl-pro/gitctl/pkg/k8s"
 	"github.com/gitctl-pro/gitctl/pkg/k8s/core"
+	"github.com/gitctl-pro/gitctl/pkg/k8s/watcher"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -18,11 +19,11 @@ func SetupK8s(kubeConfigPath string) (k8s.ClusterManager, *rest.Config, error) {
 	return clusterManager, config, nil
 }
 
-func SetupK8sWacther(config *config.ConfigResolver, kubeConfigPath string) (*k8s.K8sWatcher, *rest.Config) {
+func SetupK8sWacther(config *config.ConfigResolver, kubeConfigPath string) (*watcher.K8sWatcher, *rest.Config) {
 	log.Info("SetupK8sClient...")
 	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return k8s.NewK8sWatcher(config, kubeConfig), kubeConfig
+	return watcher.NewK8sWatcher(config, kubeConfig), kubeConfig
 }

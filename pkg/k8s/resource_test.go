@@ -2,6 +2,8 @@ package k8s
 
 import (
 	gitctl_corev1 "github.com/gitctl-pro/apps/apis/core/v1"
+	"github.com/gitctl-pro/gitctl/pkg/k8s/core"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,7 +21,7 @@ var (
 )
 
 func TestResourceCluster(t *testing.T) {
-	clusterManager := NewClusterManager(cfg)
+	clusterManager := core.NewClusterManager(cfg)
 	config, _ := clusterManager.Get("dev")
 	resource := NewResource(config, &schema.GroupVersionKind{
 		Kind:    "cluster",

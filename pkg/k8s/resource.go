@@ -50,9 +50,13 @@ func KindForResource(config *rest.Config, gvk *schema.GroupVersionKind) (rest.In
 	return client, plural, err
 }
 
-func (resource *resource) Namespace(namespace string) *resource {
+func (resource *resource) Namespace(namespace string) Resource {
 	resource.namespace = namespace
 	return resource
+}
+
+func (resource *resource) Resource() string {
+	return resource.resource
 }
 
 func (resource *resource) Client() rest.Interface {
